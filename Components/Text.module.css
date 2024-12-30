@@ -1,0 +1,10 @@
+.p {
+  text-indent: 1rem;
+}
+.w {
+  background-color: transparent;
+  border: none;
+}
+.w + .w {
+  margin-left: 0.5rem;
+}
