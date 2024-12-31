@@ -1,10 +1,3 @@
-type Click = {
-  message: "button" | "option" | "outside";
-  event: MouseEvent;
-  value?: string;
-  label?: string;
-} | null;
-
 type ObserverCallback<T, K extends keyof T> = (arg: T[K]) => void;
 
 abstract class StateManager<T extends object> {
@@ -81,11 +74,20 @@ abstract class StateManager<T extends object> {
   }
 }
 
+type Click = {
+  message: "button" | "option" | "outside";
+  event: MouseEvent;
+  value?: string;
+  label?: string;
+} | null;
+
 export type StatePublic = {
   text: string;
   parsed: boolean;
   paragraphs: number[];
-  words: string[];
+  textChunks: string[];
+  words: number;
+  wordsSelected: number[];
   click: Click | null;
   error: string;
 };
@@ -103,7 +105,9 @@ const sm = new StateManagerPublic({
   parsed: false,
   paragraphs: [],
   click: null,
+  words: 0,
+  wordsSelected: [],
   error: "",
-  words: [],
+  textChunks: [],
 });
 export default sm;

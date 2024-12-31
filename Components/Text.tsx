@@ -2,26 +2,32 @@
 import React from "react";
 import sm from "@/StateManager";
 import styles from "./Text.module.css";
+import { isLatinLetter } from "@/utils/parser";
 
 const Paragraph = ({ indx }: { indx: number }) => {
   const [words, setWords] = React.useState<string[]>([]);
+
   React.useEffect(() => {
     setWords(
-      sm.state.words.slice(
+      sm.state.textChunks.slice(
         sm.state.paragraphs[indx],
         indx == sm.state.paragraphs.length - 1
-          ? sm.state.words.length
+          ? sm.state.textChunks.length
           : sm.state.paragraphs[indx + 1]
       )
     );
   }, [indx]);
   return (
     <p className={styles.p}>
-      {words.map((word, i) => (
-        <button key={i} className={styles.w}>
-          {word}
-        </button>
-      ))}
+      {words.map((w, i) =>
+        w.length == 1 && !isLatinLetter(w) ? (
+          <span key={i}>{w}</span>
+        ) : (
+          <button key={i} className={styles.w}>
+            {w}
+          </button>
+        )
+      )}
     </p>
   );
 };
@@ -30,8 +36,8 @@ const Text = () => {
   const [p, setP] = React.useState<number[]>([]);
   React.useEffect(() => {
     const getParsed = (parse: boolean) => {
-      console.log(sm.state.paragraphs, sm.state.words)
-      if (parse) setP(sm.state.paragraphs.slice());
+      if (parse && sm.state.textChunks.length)
+        setTimeout(() => setP(sm.state.paragraphs.slice()));
       else setP([]);
     };
     sm.attach("parsed", getParsed);
@@ -41,8 +47,8 @@ const Text = () => {
   }, []);
   return (
     <div>
-      {p.map((indx) => (
-        <Paragraph indx={indx} key={indx} />
+      {p.map((_, i) => (
+        <Paragraph indx={i} key={i} />
       ))}
     </div>
   );

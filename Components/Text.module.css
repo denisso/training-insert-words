@@ -1,10 +1,23 @@
 .p {
   text-indent: 1rem;
+  position: relative;
 }
 .w {
   background-color: transparent;
   border: none;
+  cursor: pointer;
 }
+/* .w:after {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: -0.5rem;
+  width: calc(100% + 1rem);
+  height: calc(100% + 1rem);
+}
+.w:after:hover {
+  outline: 1px solid gray;
+} */
 .w + .w {
   margin-left: 0.5rem;
 }

@@ -3,7 +3,8 @@ import React from "react";
 import sm from "@/StateManager";
 import settings from "@/settings";
 import Button from "./Button";
-import "@/utils/textParser";
+import "@/utils/parser";
+import styles from "./global.module.css";
 
 const ButtonLoadFile = () => {
   const refInput = React.useRef<HTMLInputElement>(null);
@@ -48,12 +49,12 @@ const ButtonSaveFile = () => {
     link.click();
     URL.revokeObjectURL(link.href);
   };
-  return <Button onClick={saveToFile}>Load from File</Button>;
+  return <Button onClick={saveToFile}>Save to File</Button>;
 };
 
 export default function Menu() {
   return (
-    <div>
+    <div className={styles.container}>
       <ButtonLoadFile />
       <ButtonSaveFile />
     </div>
