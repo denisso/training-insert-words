@@ -4,11 +4,12 @@ import sm from "@/StateManager";
 import settings from "@/settings";
 import Button from "./Button";
 import "@/utils/parser";
-import styles from "./global.module.css";
+import "@/utils/contest";
 
 const ButtonLoadFile = () => {
   const refInput = React.useRef<HTMLInputElement>(null);
   const onClick = () => {
+    if (refInput.current?.value) refInput.current.value = "";
     refInput.current?.click();
   };
   const loadFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,6 +24,8 @@ const ButtonLoadFile = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         sm.state.text = String(e.target?.result) ?? "";
+        sm.state.stage = "fileloaded";
+        
       };
       reader.readAsText(file);
     }
@@ -54,7 +57,7 @@ const ButtonSaveFile = () => {
 
 export default function Menu() {
   return (
-    <div className={styles.container}>
+    <div>
       <ButtonLoadFile />
       <ButtonSaveFile />
     </div>

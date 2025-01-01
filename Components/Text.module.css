@@ -7,17 +7,11 @@
   border: none;
   cursor: pointer;
 }
-/* .w:after {
-  content: "";
-  position: absolute;
-  left: -0.5rem;
-  top: -0.5rem;
-  width: calc(100% + 1rem);
-  height: calc(100% + 1rem);
+.outline {
+  outline: 1px solid white;
+  min-width: 3rem;
 }
-.w:after:hover {
-  outline: 1px solid gray;
-} */
+
 .w + .w {
   margin-left: 0.5rem;
 }

@@ -1,4 +1,4 @@
-import sm from "@/StateManager";
+import sm, { StatePublic } from "@/StateManager";
 
 export function isLatinLetter(char: string) {
   return /^[a-zA-Z]$/.test(char);
@@ -7,21 +7,21 @@ export function isLatinLetter(char: string) {
 class Parser {
   constructor() {
     this.parse = this.parse.bind(this);
-    sm.attach("text", this.parse);
+    sm.attach("stage", this.parse);
   }
   pushWord(w: string) {
     if (!w) return;
-    if (w.length > 1 || isLatinLetter(w)) sm.state.words++;
+    if (w.length > 1 || isLatinLetter(w))
+      sm.state.words.push(sm.state.textChunks.length);
     sm.state.textChunks.push(w);
   }
-  parse(text: string) {
-    sm.state.words = 0;
+  parse(stage: StatePublic["stage"]) {
+    if (stage != "fileloaded") return;
+    const text = sm.state.text;
+    sm.state.words.length = 0;
     sm.state.textChunks.length = 0;
     sm.state.paragraphs.length = 0;
-    sm.state.wordsSelected.length = 0
     sm.state.paragraphs.push(0);
-    sm.state.parsed = false;
-
     const n = text.length,
       a = "a".charCodeAt(0),
       A = "A".charCodeAt(0),
@@ -54,10 +54,7 @@ class Parser {
       }
     }
     this.pushWord(w);
-    sm.state.parsed = true;
-    for(let i =0; i < n; i++){
-      
-    }
+    sm.state.stage = "textparsed";
   }
 }
 

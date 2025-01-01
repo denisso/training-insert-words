@@ -3,7 +3,8 @@ import React from "react";
 import sm from "@/StateManager";
 import styles from "./Text.module.css";
 import { isLatinLetter } from "@/utils/parser";
-
+import classNames from "classnames";
+import type { StatePublic } from "@/StateManager";
 const Paragraph = ({ indx }: { indx: number }) => {
   const [words, setWords] = React.useState<string[]>([]);
 
@@ -21,9 +22,26 @@ const Paragraph = ({ indx }: { indx: number }) => {
     <p className={styles.p}>
       {words.map((w, i) =>
         w.length == 1 && !isLatinLetter(w) ? (
-          <span key={i}>{w}</span>
+          <span
+            key={i}
+            className={
+              sm.state.wordsSet.has(sm.state.paragraphs[indx] + i)
+                ? styles.outline
+                : ""
+            }
+          >
+            {w}
+          </span>
         ) : (
-          <button key={i} className={styles.w}>
+          <button
+            key={i}
+            className={classNames(
+              styles.w,
+              sm.state.wordsSet.has(sm.state.paragraphs[indx] + i)
+                ? styles.outline
+                : ""
+            )}
+          >
             {w}
           </button>
         )
@@ -35,14 +53,14 @@ const Paragraph = ({ indx }: { indx: number }) => {
 const Text = () => {
   const [p, setP] = React.useState<number[]>([]);
   React.useEffect(() => {
-    const getParsed = (parse: boolean) => {
-      if (parse && sm.state.textChunks.length)
+    const getParagraphs = (stage: StatePublic["stage"]) => {
+      if (stage == "caseready" && sm.state.textChunks.length)
         setTimeout(() => setP(sm.state.paragraphs.slice()));
       else setP([]);
     };
-    sm.attach("parsed", getParsed);
+    sm.attach("stage", getParagraphs);
     return () => {
-      sm.detach("parsed", getParsed);
+      sm.detach("stage", getParagraphs);
     };
   }, []);
   return (

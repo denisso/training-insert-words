@@ -1,11 +1,16 @@
 import Menu from "@/Components/Menu";
 import Text from "@/Components/Text";
+import Words from "@/Components/Words";
+import styles from "./page.module.css";
 
 export default function Home() {
   return (
-    <div>
+    <div className={styles.container}>
       <Menu />
-      <Text />
+      <div className={styles.box}>
+        <Text />
+        <Words />
+      </div>
     </div>
   );
 }
