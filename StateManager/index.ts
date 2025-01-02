@@ -32,7 +32,7 @@ abstract class StateManager<T extends object> {
   protected _notifyFn<K extends keyof T>(key: K) {
     // value variable - important for recursive update states
     const value = this._state[key];
-    for (const cb of this._observs[key]) cb(value)
+    for (const cb of this._observs[key]) cb(value);
   }
 
   protected _buildProxy<K extends keyof T>(
@@ -74,23 +74,19 @@ abstract class StateManager<T extends object> {
   }
 }
 
-type Click = {
-  message: "button" | "option" | "outside";
-  event: MouseEvent;
-  value?: string;
-  label?: string;
-} | null;
-
 export type StatePublic = {
+  stage:
+    | "init"
+    | "fileloaded"
+    | "textparsed"
+    | "casestart"
+    | "caseloading"
+    | "caseready";
   text: string;
-  stage: "init" | "fileloaded" | "textparsed" | "caseloading" | "caseready";
-  error: string;
-  paragraphs: number[];
   textChunks: string[];
+  paragraphs: number[];
+  // array for fast navigate by only words
   words: number[];
-  wordsSet: Set<number>;
-  wordsSelected: number[];
-  click: Click | null;
 };
 
 class StateManagerPublic extends StateManager<StatePublic> {
@@ -105,11 +101,8 @@ const sm = new StateManagerPublic({
   text: "",
   stage: "init",
   paragraphs: [],
-  click: null,
   words: [],
-  wordsSet: new Set<number>(),
-  wordsSelected: [],
-  error: "",
+  // wordSelected: 0,
   textChunks: [],
 });
 export default sm;

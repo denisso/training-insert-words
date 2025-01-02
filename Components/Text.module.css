@@ -1,17 +1,30 @@
 .p {
   text-indent: 1rem;
   position: relative;
+  font-size: var(--testcaseFontSize);
+  letter-spacing: var(--testcaseLetterSpacing);
 }
 .w {
   background-color: transparent;
   border: none;
   cursor: pointer;
+  font-size: var(--testcaseFontSize);
+  letter-spacing: var(--testcaseLetterSpacing);
 }
 .outline {
   outline: 1px solid white;
   min-width: 3rem;
+  padding-bottom: .3rem;
+  min-height: 1.5rem;
 }
-
+.selected{
+  outline: 1px solid orange;
+}
+.box {
+  font-size: var(--testcaseFontSize);
+  line-height: var(--testcaseLineHeight);
+  letter-spacing: var(--testcaseLetterSpacing);
+}
 .w + .w {
   margin-left: 0.5rem;
 }

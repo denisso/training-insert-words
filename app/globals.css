@@ -1,6 +1,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --testcaseFontSize: 1.5rem;
+  --testcaseLineHeight: 2rem;
+  --testcaseLetterSpacing: 0.1rem
 }
 
 @media (prefers-color-scheme: dark) {
