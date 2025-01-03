@@ -87,6 +87,7 @@ export type StatePublic = {
   paragraphs: number[];
   // array for fast navigate by only words
   words: number[];
+  checkReady: boolean;
 };
 
 class StateManagerPublic extends StateManager<StatePublic> {
@@ -104,5 +105,6 @@ const sm = new StateManagerPublic({
   words: [],
   // wordSelected: 0,
   textChunks: [],
+  checkReady: false,
 });
 export default sm;

@@ -15,16 +15,15 @@ type WordPlaceProps = {
 const Place = ({ indx }: WordPlaceProps) => {
   const [selected, setSelected] = React.useState(false);
   const [word, setWord] = React.useState("");
-  const wordRef = React.useRef<number>(-1);
+
   React.useEffect(() => {
-    contest.places.set(indx, (action: "select" | "word", payload: number) => {
+    contest.placesCb.set(indx, (action: "select" | "word", payload: number) => {
       if (action == "word") {
         if (payload == -1) {
           setWord("");
         } else {
           setWord(sm.state.textChunks[payload]);
         }
-        wordRef.current = payload;
       }
       if (action == "select") {
         if (payload == -1) setSelected(false);
@@ -35,15 +34,9 @@ const Place = ({ indx }: WordPlaceProps) => {
   }, [indx]);
 
   const handleClick = () => {
-    if (wordRef.current == -1) {
-      setSelected(true);
-      const cb = contest.places.get(contest.placeSelected);
-      if (typeof cb == "function") cb("select", -1);
-
-      contest.placeSelected = indx;
-    }
-    
+    contest.clickByPlace(indx, setSelected, setWord);
   };
+
   return (
     <button
       className={classNames(
@@ -59,7 +52,7 @@ const Place = ({ indx }: WordPlaceProps) => {
 };
 
 const Word = ({ word, indx }: WordPlaceProps) => {
-  return contest.wordsSet.has(indx) ? (
+  return contest.placesSet.has(indx) ? (
     <Place word={word} indx={indx} />
   ) : isLatinLetter(word[0]) ? (
     <button className={styles.w}>{word}</button>
@@ -90,7 +83,7 @@ const Paragraph = ({ indx }: { indx: number }) => {
   );
 };
 
-const Text = () => {
+const Text = ({className}: {className?: string}) => {
   const [p, setP] = React.useState<number[]>([]);
   React.useEffect(() => {
     const getParagraphs = (stage: StatePublic["stage"]) => {
@@ -104,7 +97,7 @@ const Text = () => {
     };
   }, []);
   return (
-    <div className={styles.box}>
+    <div className={classNames(className, styles.box)}>
       {p.map((_, i) => (
         <Paragraph indx={i} key={i} />
       ))}

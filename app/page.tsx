@@ -8,8 +8,8 @@ export default function Home() {
     <div className={styles.container}>
       <Menu />
       <div className={styles.box}>
-        <Text />
-        <Words />
+        <Text className={styles.text} />
+        <Words className={styles.words} />
       </div>
     </div>
   );

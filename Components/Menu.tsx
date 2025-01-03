@@ -4,7 +4,7 @@ import sm from "@/StateManager";
 import settings from "@/settings";
 import Button from "./Button";
 import "@/utils/parser";
-import "@/utils/contest";
+import contest from "@/utils/contest";
 
 const ButtonLoadFile = () => {
   const refInput = React.useRef<HTMLInputElement>(null);
@@ -25,7 +25,6 @@ const ButtonLoadFile = () => {
       reader.onload = (e) => {
         sm.state.text = String(e.target?.result) ?? "";
         sm.state.stage = "fileloaded";
-        
       };
       reader.readAsText(file);
     }
@@ -43,23 +42,43 @@ const ButtonLoadFile = () => {
     </>
   );
 };
-const ButtonSaveFile = () => {
-  const saveToFile = () => {
-    const blob = new Blob([sm.state.text], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "textfile.txt";
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
-  return <Button onClick={saveToFile}>Save to File</Button>;
+
+// const ButtonSaveFile = () => {
+//   const saveToFile = () => {
+//     const blob = new Blob([sm.state.text], { type: "text/plain" });
+//     const link = document.createElement("a");
+//     link.href = URL.createObjectURL(blob);
+//     link.download = "textfile.txt";
+//     link.click();
+//     URL.revokeObjectURL(link.href);
+//   };
+//   return <Button onClick={saveToFile}>Save to File</Button>;
+// };
+
+const ButtonCheck = () => {
+  const [disabled, setDisabled] = React.useState(false);
+  React.useEffect(() => {
+    const checkReady = (enabled: boolean) => setDisabled(!enabled);
+
+    sm.attach("checkReady", checkReady);
+    setDisabled(!sm.state.checkReady);
+    return () => {
+      sm.detach("checkReady", checkReady);
+    };
+  }, []);
+  return <Button disabled={disabled} onClick={contest.check}>Check</Button>;
 };
 
+const ButtonStart = () => {
+  return <Button onClick={contest.start}>Start test</Button>;
+};
 export default function Menu() {
   return (
     <div>
       <ButtonLoadFile />
-      <ButtonSaveFile />
+      {/* <ButtonSaveFile /> */}
+      <ButtonCheck />
+      <ButtonStart />
     </div>
   );
 }

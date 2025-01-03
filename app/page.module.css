@@ -7,3 +7,9 @@
   display: flex;
   gap: 1rem;
 }
+.text {
+  flex: 7;
+}
+.words {
+  flex: 3;
+}

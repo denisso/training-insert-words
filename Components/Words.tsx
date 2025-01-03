@@ -4,13 +4,27 @@ import sm from "@/StateManager";
 import type { StatePublic } from "@/StateManager";
 import styles from "./Words.module.css";
 import contest from "@/utils/contest";
-
+import classNames from "classnames";
 const Word = ({ indx }: { indx: number }) => {
-  React.useEffect(() => {}, [indx]);
-  return <div className={styles.w}>{sm.state.textChunks[indx]}</div>;
+  const [hidden, setHidden] = React.useState(false);
+  React.useEffect(() => {
+    contest.wordsCb.set(indx, setHidden);
+  }, [indx]);
+
+  return (
+    <div
+      className={classNames(styles.w, hidden ? styles.hidden : "")}
+      onClick={() => {
+        contest.clickByWord(indx);
+        setHidden(true);
+      }}
+    >
+      {sm.state.textChunks[indx]}
+    </div>
+  );
 };
 
-const Words = () => {
+const Words = ({ className }: { className?: string }) => {
   const [words, setWords] = React.useState<number[]>([]);
   const loaded = React.useRef(false);
   React.useEffect(() => {
@@ -19,10 +33,8 @@ const Words = () => {
         if (stage == "caseloading") setWords([]);
         return;
       }
-
       loaded.current = true;
-
-      setWords(Array.from(contest.wordsSet.keys()));
+      setWords(Array.from(contest.placesSet.keys()));
     };
     sm.attach("stage", getWords);
     return () => {
@@ -30,7 +42,7 @@ const Words = () => {
     };
   }, []);
   return (
-    <div className="">
+    <div className={className}>
       {words.map((indx) => (
         <Word key={indx} indx={indx} />
       ))}
