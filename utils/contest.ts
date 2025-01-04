@@ -1,4 +1,4 @@
-import sm, { StatePublic } from "@/StateManager";
+import sm, { StatePublic, stagesDict } from "@/StateManager";
 import config from "@/settings";
 
 const randomInteger = (min: number, max: number) =>
@@ -14,19 +14,21 @@ class ConTest {
   public placesSet = new Map<number, number>();
   private _placed = 0;
   constructor() {
-    this.start = this.start.bind(this);
+    this.build = this.build.bind(this);
     this.check = this.check.bind(this);
     sm.attach("stage", (stage: StatePublic["stage"]) => {
-      if (stage == "textparsed") this.start();
+      if (stage == "textparsed") this.build();
     });
   }
-  start() {
-    if (sm.state.stage != "textparsed" && sm.state.stage != "caseready") return;
+  build() {
+    if (stagesDict[sm.state.stage] < stagesDict["textparsed"]) return;
     sm.state.stage = "caseloading";
+    sm.state.checkReady = false;
     this.placesSet.clear();
     this.placesCb.clear();
     this.wordsCb.clear();
     this._placed = 0;
+
     const n =
       sm.state.words.length - (sm.state.words.length % config.wordsStepCount);
     this.placeSelected =
@@ -130,9 +132,8 @@ class ConTest {
     this._placed -= minus;
     if (minus) {
       this._selectFirstEmptyPlace();
-    }
-    else{
-      alert("Ok")
+    } else {
+      alert("Ok");
     }
   }
 }

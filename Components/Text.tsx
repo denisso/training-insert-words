@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import sm from "@/StateManager";
+import sm, { stagesDict } from "@/StateManager";
 import styles from "./Text.module.css";
 import { isLatinLetter } from "@/utils/parser";
 import classNames from "classnames";
@@ -52,7 +52,26 @@ const Place = ({ indx }: WordPlaceProps) => {
 };
 
 const Word = ({ word, indx }: WordPlaceProps) => {
-  return contest.placesSet.has(indx) ? (
+  const [isPlace, setIsPlace] = React.useState(false);
+  const isPlaceRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!contest.placesSet.has(indx)) return;
+    const getStage = (stage: StatePublic["stage"]) => {
+      if (stagesDict[stage] < stagesDict["contest"]) {
+        if (isPlaceRef.current) setIsPlace(false);
+        isPlaceRef.current = false;
+      } else {
+        setIsPlace(true);
+        isPlaceRef.current = true;
+      }
+    };
+    sm.attach("stage", getStage);
+    return () => {
+      sm.detach("stage", getStage);
+    };
+  }, [indx]);
+  return isPlace ? (
     <Place word={word} indx={indx} />
   ) : isLatinLetter(word[0]) ? (
     <button className={styles.w}>{word}</button>
@@ -83,12 +102,15 @@ const Paragraph = ({ indx }: { indx: number }) => {
   );
 };
 
-const Text = ({className}: {className?: string}) => {
+const Text = ({ className }: { className?: string }) => {
   const [p, setP] = React.useState<number[]>([]);
   React.useEffect(() => {
     const getParagraphs = (stage: StatePublic["stage"]) => {
-      if (stage == "caseready" && sm.state.textChunks.length)
-        setTimeout(() => setP(sm.state.paragraphs.slice()));
+      if (
+        stagesDict[stage] >= stagesDict["caseready"] &&
+        sm.state.textChunks.length
+      )
+        setP(sm.state.paragraphs.slice());
       else setP([]);
     };
     sm.attach("stage", getParagraphs);

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import sm from "@/StateManager";
+import sm, { StatePublic, stagesDict } from "@/StateManager";
 import settings from "@/settings";
 import Button from "./Button";
 import "@/utils/parser";
@@ -66,11 +66,55 @@ const ButtonCheck = () => {
       sm.detach("checkReady", checkReady);
     };
   }, []);
-  return <Button disabled={disabled} onClick={contest.check}>Check</Button>;
+  return (
+    <Button disabled={disabled} onClick={contest.check}>
+      Check
+    </Button>
+  );
 };
+const ButtonBuildCase = () => {
+  const [disabled, setDisabled] = React.useState(true);
+  React.useEffect(() => {
+    const getStage = (stage: StatePublic["stage"]) => {
+      if (stagesDict[stage] < stagesDict["contest"])
+        return setDisabled(true);
+      setDisabled(false);
+    };
+    sm.attach("stage", getStage);
+    setDisabled(!sm.state.checkReady);
+    return () => {
+      sm.detach("stage", getStage);
+    };
+  }, []);
+  return (
+    <Button disabled={disabled} onClick={contest.build}>
+      Rebuild test
+    </Button>
+  );
+};
+const ButtonStartContest = () => {
+  const [disabled, setDisabled] = React.useState(true);
+  React.useEffect(() => {
+    const getStage = (stage: StatePublic["stage"]) => {
+      if (stagesDict[stage] < stagesDict["textparsed"])
+        return setDisabled(true);
+      setDisabled(false);
+    };
+    sm.attach("stage", getStage);
+    setDisabled(!sm.state.checkReady);
+    return () => {
+      sm.detach("stage", getStage);
+    };
+  }, []);
 
-const ButtonStart = () => {
-  return <Button onClick={contest.start}>Start test</Button>;
+  const handleClick = () => {
+    sm.state.stage = "contest";
+  };
+  return (
+    <Button disabled={disabled} onClick={handleClick}>
+      Start test
+    </Button>
+  );
 };
 export default function Menu() {
   return (
@@ -78,7 +122,8 @@ export default function Menu() {
       <ButtonLoadFile />
       {/* <ButtonSaveFile /> */}
       <ButtonCheck />
-      <ButtonStart />
+      <ButtonBuildCase />
+      <ButtonStartContest />
     </div>
   );
 }

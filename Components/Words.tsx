@@ -5,6 +5,7 @@ import type { StatePublic } from "@/StateManager";
 import styles from "./Words.module.css";
 import contest from "@/utils/contest";
 import classNames from "classnames";
+
 const Word = ({ indx }: { indx: number }) => {
   const [hidden, setHidden] = React.useState(false);
   React.useEffect(() => {
@@ -29,8 +30,9 @@ const Words = ({ className }: { className?: string }) => {
   const loaded = React.useRef(false);
   React.useEffect(() => {
     const getWords = function (stage: StatePublic["stage"]) {
-      if (stage != "caseready") {
-        if (stage == "caseloading") setWords([]);
+      if (stage != "contest") {
+        if (loaded.current) setWords([]);
+        loaded.current = false;
         return;
       }
       loaded.current = true;

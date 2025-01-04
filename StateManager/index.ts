@@ -74,20 +74,33 @@ abstract class StateManager<T extends object> {
   }
 }
 
+export const stages = [
+  "init",
+  "fileloaded",
+  "textparsed",
+  "textshow",
+  "casestart",
+  "caseloading",
+  "caseready",
+  "contest",
+] as const;
+
+export const stagesDict: Record<(typeof stages)[number], number> = 
+  stages.reduce((a, e, i) => {
+    a[e] = i;
+    return a;
+  }, {} as Record<(typeof stages)[number], number>);
+
 export type StatePublic = {
-  stage:
-    | "init"
-    | "fileloaded"
-    | "textparsed"
-    | "casestart"
-    | "caseloading"
-    | "caseready";
+  stage: (typeof stages)[number];
+
   text: string;
   textChunks: string[];
   paragraphs: number[];
   // array for fast navigate by only words
   words: number[];
   checkReady: boolean;
+  error: string;
 };
 
 class StateManagerPublic extends StateManager<StatePublic> {
@@ -103,8 +116,8 @@ const sm = new StateManagerPublic({
   stage: "init",
   paragraphs: [],
   words: [],
-  // wordSelected: 0,
   textChunks: [],
   checkReady: false,
+  error: "",
 });
 export default sm;
