@@ -5,6 +5,8 @@ import settings from "@/settings";
 import Button from "./Button";
 import "@/utils/parser";
 import contest from "@/utils/contest";
+import Timer from "./Timer";
+import State from "./State";
 
 const ButtonLoadFile = () => {
   const refInput = React.useRef<HTMLInputElement>(null);
@@ -76,8 +78,7 @@ const ButtonBuildCase = () => {
   const [disabled, setDisabled] = React.useState(true);
   React.useEffect(() => {
     const getStage = (stage: StatePublic["stage"]) => {
-      if (stagesDict[stage] < stagesDict["contest"])
-        return setDisabled(true);
+      if (stagesDict[stage] < stagesDict["contest"]) return setDisabled(true);
       setDisabled(false);
     };
     sm.attach("stage", getStage);
@@ -124,6 +125,8 @@ export default function Menu() {
       <ButtonCheck />
       <ButtonBuildCase />
       <ButtonStartContest />
+      <Timer />
+      <State />
     </div>
   );
 }
