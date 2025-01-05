@@ -76,7 +76,7 @@ const Word = ({ word, indx }: WordPlaceProps) => {
   ) : isLatinLetter(word[0]) ? (
     <button className={styles.w}>{word}</button>
   ) : (
-    <span>{word}</span>
+    <span>{word === " " ? "\u2004" : word}</span>
   );
 };
 

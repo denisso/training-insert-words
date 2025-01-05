@@ -1,7 +1,30 @@
-.w{
+.bw {
+  display: flex;
+  align-items: center;
+}
+.w {
   font-size: var(--testcaseFontSize);
+  background-color: transparent;
+  border: none;
   cursor: pointer;
+  letter-spacing: var(--testcaseLetterSpacing);
+  padding: 0 1rem;
+  text-align: center;
+  user-select: none;
+  outline: 1px solid white;
+  min-width: 3rem;
+  min-height: 1.5rem;
+}
+.space {
+  line-height: var(--testcaseLineHeight);
+  font-size: var(--testcaseFontSize);
 }
 .hidden {
   display: none;
+}
+
+.box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
 }

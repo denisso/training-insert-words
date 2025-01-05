@@ -13,14 +13,17 @@ const Word = ({ indx }: { indx: number }) => {
   }, [indx]);
 
   return (
-    <div
-      className={classNames(styles.w, hidden ? styles.hidden : "")}
-      onClick={() => {
-        contest.clickByWord(indx);
-        setHidden(true);
-      }}
-    >
-      {sm.state.textChunks[indx]}
+    <div className={classNames(styles.bw, hidden ? styles.hidden : "")}>
+      <button
+        className={styles.w}
+        onClick={() => {
+          contest.clickByWord(indx);
+          setHidden(true);
+        }}
+      >
+        {sm.state.textChunks[indx]}
+      </button>
+      <div className={styles.space}>{"\u2004"}</div>
     </div>
   );
 };
@@ -45,9 +48,11 @@ const Words = ({ className }: { className?: string }) => {
   }, []);
   return (
     <div className={className}>
-      {words.map((indx) => (
-        <Word key={indx} indx={indx} />
-      ))}
+      <div className={styles.box}>
+        {words.map((indx) => (
+          <Word key={indx} indx={indx} />
+        ))}
+      </div>
     </div>
   );
 };

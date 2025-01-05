@@ -1,8 +1,13 @@
 .p {
-  text-indent: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   position: relative;
-  font-size: var(--testcaseFontSize);
-  letter-spacing: var(--testcaseLetterSpacing);
+  line-height: var(--testcaseLineHeight);
+}
+.p::before{
+  content: "";
+  padding: 1rem;
 }
 .w {
   background-color: transparent;
@@ -11,18 +16,18 @@
   font-size: var(--testcaseFontSize);
   letter-spacing: var(--testcaseLetterSpacing);
 }
+
 .outline {
   outline: 1px solid white;
   min-width: 3rem;
-  padding-bottom: .3rem;
   min-height: 1.5rem;
 }
-.selected{
+.selected {
   outline: 1px solid orange;
 }
+
 .box {
   font-size: var(--testcaseFontSize);
-  line-height: var(--testcaseLineHeight);
   letter-spacing: var(--testcaseLetterSpacing);
 }
 .w + .w {
