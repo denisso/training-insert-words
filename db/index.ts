@@ -10,11 +10,24 @@ export type TEXTS = {
 
 const db = new sqlite3.Database("./db.sqlite");
 
-const selectQuery = db.prepare(`SELECT * FROM text WHERE name LIKE ?`);
+const selectQueryName = db.prepare(`SELECT * FROM text WHERE name LIKE ?`);
 
 export async function getTextsByName(name: string) {
   return new Promise((resolve, reject) => {
-    selectQuery.all(name, (err, rows) => {
+    selectQueryName.all(name, (err, rows) => {
+      if (err) {
+        reject(err.message);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+const selectQueryID = db.prepare(`SELECT * FROM text WHERE id = ?`);
+
+export async function getTextByID(id: string) {
+  return new Promise((resolve, reject) => {
+    selectQueryID.all(id, (err, rows) => {
       if (err) {
         reject(err.message);
       } else {
