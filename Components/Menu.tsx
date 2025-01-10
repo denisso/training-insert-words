@@ -7,6 +7,7 @@ import "@/utils/parser";
 import contest from "@/utils/contest";
 import Timer from "./Timer";
 import State from "./State";
+import Link from "next/link";
 
 const ButtonLoadFile = () => {
   const refInput = React.useRef<HTMLInputElement>(null);
@@ -120,6 +121,8 @@ const ButtonStartContest = () => {
 export default function Menu() {
   return (
     <div>
+      <Link href="/">home</Link> / 
+      <Link href="/texts">texts</Link>
       <ButtonLoadFile />
       {/* <ButtonSaveFile /> */}
       <ButtonCheck />
