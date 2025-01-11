@@ -30,7 +30,8 @@ class ConTest {
     this._placed = 0;
 
     const n =
-      sm().state.words.length - (sm().state.words.length % config.wordsStepCount);
+      sm().state.words.length -
+      (sm().state.words.length % config.wordsStepCount);
     this.placeSelected =
       sm().state.words[randomInteger(0, config.wordsStepCount - 1)];
     this.placesSet.set(this.placeSelected, -1);
@@ -43,7 +44,8 @@ class ConTest {
       sm().state.words.length % config.wordsStepCount >=
       config.wordsStepCount >> 1
     ) {
-      const indx = sm().state.words[randomInteger(n, sm().state.words.length - 1)];
+      const indx =
+        sm().state.words[randomInteger(n, sm().state.words.length - 1)];
       this.placesSet.set(indx, -1);
     }
     setTimeout(() => (sm().state.stage = "caseready"));
@@ -133,13 +135,14 @@ class ConTest {
     if (minus) {
       this._selectFirstEmptyPlace();
     } else {
+      sm().state.stage = "contestfinish";
       alert("Ok");
     }
   }
 }
 
-let inst : ConTest | undefined;
-function getInstance(): ConTest{
+let inst: ConTest | undefined;
+function getInstance(): ConTest {
   if (!inst) {
     if (typeof window === "undefined") {
       throw new Error("ConTest is not available on the server.");

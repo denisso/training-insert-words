@@ -84,6 +84,7 @@ export const stages = [
   "caseloading",
   "caseready",
   "contest",
+  "contestfinish",
 ] as const;
 
 export const stagesDict: Record<(typeof stages)[number], number> =
@@ -94,7 +95,7 @@ export const stagesDict: Record<(typeof stages)[number], number> =
 
 export type StatePublic = {
   stage: (typeof stages)[number];
-
+  timerSec: number;
   text: string;
   textChunks: string[];
   paragraphs: number[];
@@ -122,6 +123,7 @@ function getInstance(): StateManagerPublic {
     inst = new StateManagerPublic({
       text: "",
       stage: "init",
+      timerSec: 0,
       paragraphs: [],
       words: [],
       textChunks: [],
