@@ -8,11 +8,11 @@ const State = () => {
       if (stagesDict[state] < stagesDict["textparsed"]) {
         return setWords(0);
       }
-      setWords(sm.state.words.length);
+      setWords(sm().state.words.length);
     };
-    sm.attach("stage", getStage);
+    sm().attach("stage", getStage);
     return () => {
-      sm.detach("stage", getStage);
+      sm().detach("stage", getStage);
     };
   }, []);
   return <>{words} words.</>;

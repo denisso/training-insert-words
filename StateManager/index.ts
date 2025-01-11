@@ -1,3 +1,4 @@
+"use client";
 type ObserverCallback<T, K extends keyof T> = (arg: T[K]) => void;
 
 abstract class StateManager<T extends object> {
@@ -85,7 +86,7 @@ export const stages = [
   "contest",
 ] as const;
 
-export const stagesDict: Record<(typeof stages)[number], number> = 
+export const stagesDict: Record<(typeof stages)[number], number> =
   stages.reduce((a, e, i) => {
     a[e] = i;
     return a;
@@ -111,13 +112,24 @@ class StateManagerPublic extends StateManager<StatePublic> {
   }
 }
 
-const sm = new StateManagerPublic({
-  text: "",
-  stage: "init",
-  paragraphs: [],
-  words: [],
-  textChunks: [],
-  checkReady: false,
-  error: "",
-});
-export default sm;
+let inst: StateManagerPublic | undefined;
+
+function getInstance(): StateManagerPublic {
+  if (!inst) {
+    if (typeof window === "undefined") {
+      throw new Error("StateManagerPublic is not available on the server.");
+    }
+    inst = new StateManagerPublic({
+      text: "",
+      stage: "init",
+      paragraphs: [],
+      words: [],
+      textChunks: [],
+      checkReady: false,
+      error: "",
+    });
+  }
+  return inst;
+}
+
+export default getInstance;

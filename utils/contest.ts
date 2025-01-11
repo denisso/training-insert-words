@@ -16,37 +16,37 @@ class ConTest {
   constructor() {
     this.build = this.build.bind(this);
     this.check = this.check.bind(this);
-    sm.attach("stage", (stage: StatePublic["stage"]) => {
+    sm().attach("stage", (stage: StatePublic["stage"]) => {
       if (stage == "textparsed") this.build();
     });
   }
   build() {
-    if (stagesDict[sm.state.stage] < stagesDict["textparsed"]) return;
-    sm.state.stage = "caseloading";
-    sm.state.checkReady = false;
+    if (stagesDict[sm().state.stage] < stagesDict["textparsed"]) return;
+    sm().state.stage = "caseloading";
+    sm().state.checkReady = false;
     this.placesSet.clear();
     this.placesCb.clear();
     this.wordsCb.clear();
     this._placed = 0;
 
     const n =
-      sm.state.words.length - (sm.state.words.length % config.wordsStepCount);
+      sm().state.words.length - (sm().state.words.length % config.wordsStepCount);
     this.placeSelected =
-      sm.state.words[randomInteger(0, config.wordsStepCount - 1)];
+      sm().state.words[randomInteger(0, config.wordsStepCount - 1)];
     this.placesSet.set(this.placeSelected, -1);
     for (let i = config.wordsStepCount; i < n; i += config.wordsStepCount) {
       const indx =
-        sm.state.words[randomInteger(i, i + config.wordsStepCount - 1)];
+        sm().state.words[randomInteger(i, i + config.wordsStepCount - 1)];
       this.placesSet.set(indx, -1);
     }
     if (
-      sm.state.words.length % config.wordsStepCount >=
+      sm().state.words.length % config.wordsStepCount >=
       config.wordsStepCount >> 1
     ) {
-      const indx = sm.state.words[randomInteger(n, sm.state.words.length - 1)];
+      const indx = sm().state.words[randomInteger(n, sm().state.words.length - 1)];
       this.placesSet.set(indx, -1);
     }
-    setTimeout(() => (sm.state.stage = "caseready"));
+    setTimeout(() => (sm().state.stage = "caseready"));
   }
   private _switchSelectTo(from: number, to: number) {
     const selectOffCb = this.placesCb.get(from);
@@ -77,7 +77,7 @@ class ConTest {
 
     if (this._placed == this.placesSet.size) {
       // activate button check
-      sm.state.checkReady = true;
+      sm().state.checkReady = true;
       const selectOffCb = this.placesCb.get(this.placeSelected);
       if (typeof selectOffCb == "function") selectOffCb("select", -1);
     } else {
@@ -96,7 +96,7 @@ class ConTest {
       const cb = this.placesCb.get(this.placeSelected);
       if (typeof cb == "function") cb("select", -1);
     } else {
-      if (this._placed == this.placesSet.size) sm.state.checkReady = false;
+      if (this._placed == this.placesSet.size) sm().state.checkReady = false;
       this._placed--;
 
       const wordIndx = this.placesSet.get(indx);
@@ -114,7 +114,7 @@ class ConTest {
   }
   check() {
     const iterator = this.placesSet.entries(),
-      chunks = sm.state.textChunks;
+      chunks = sm().state.textChunks;
     let result = iterator.next(),
       minus = 0;
     while (!result.done) {
@@ -138,5 +138,15 @@ class ConTest {
   }
 }
 
-const test = new ConTest();
-export default test;
+let inst : ConTest | undefined;
+function getInstance(): ConTest{
+  if (!inst) {
+    if (typeof window === "undefined") {
+      throw new Error("ConTest is not available on the server.");
+    }
+    inst = new ConTest();
+  }
+  return inst;
+}
+
+export default getInstance;

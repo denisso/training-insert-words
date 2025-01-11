@@ -7,9 +7,9 @@ const ErrorMessage = () => {
   const [message, setMessage] = React.useState("");
 
   React.useEffect(() => {
-    sm.attach("error", setMessage);
+    sm().attach("error", setMessage);
     return () => {
-      sm.detach("error", setMessage);
+      sm().detach("error", setMessage);
     };
   }, []);
   return (

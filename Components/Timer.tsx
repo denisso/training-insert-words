@@ -18,9 +18,9 @@ const Timer = () => {
         setSec((prev) => prev + 1);
       }, 1000);
     };
-    sm.attach("stage", getStage);
+    sm().attach("stage", getStage);
     return () => {
-      sm.attach("stage", getStage);
+      sm().attach("stage", getStage);
     };
   }, []);
   return <>{sec} sec</>;

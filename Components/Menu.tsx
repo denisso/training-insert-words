@@ -3,11 +3,10 @@ import React from "react";
 import sm, { StatePublic, stagesDict } from "@/StateManager";
 import settings from "@/settings";
 import Button from "./Button";
-import "@/utils/parser";
+import parser from "@/utils/parser";
 import contest from "@/utils/contest";
 import Timer from "./Timer";
 import State from "./State";
-import Link from "next/link";
 
 const ButtonLoadFile = () => {
   const refInput = React.useRef<HTMLInputElement>(null);
@@ -19,15 +18,16 @@ const ButtonLoadFile = () => {
     if (event.target.files?.length) {
       const file = event.target.files[0];
       if (file.size > settings.fileSize) {
-        sm.state.text = `file size is more than ${settings.fileSize} bytes`;
+        sm().state.text = `file size is more than ${settings.fileSize} bytes`;
         return;
-      } else if (sm.state.text) {
-        sm.state.text = "";
+      } else if (sm().state.text) {
+        sm().state.text = "";
       }
       const reader = new FileReader();
       reader.onload = (e) => {
-        sm.state.text = String(e.target?.result) ?? "";
-        sm.state.stage = "fileloaded";
+        const state = sm().state;
+        state.text = String(e.target?.result);
+        state.stage = "fileloaded";
       };
       reader.readAsText(file);
     }
@@ -46,31 +46,21 @@ const ButtonLoadFile = () => {
   );
 };
 
-// const ButtonSaveFile = () => {
-//   const saveToFile = () => {
-//     const blob = new Blob([sm.state.text], { type: "text/plain" });
-//     const link = document.createElement("a");
-//     link.href = URL.createObjectURL(blob);
-//     link.download = "textfile.txt";
-//     link.click();
-//     URL.revokeObjectURL(link.href);
-//   };
-//   return <Button onClick={saveToFile}>Save to File</Button>;
-// };
-
 const ButtonCheck = () => {
   const [disabled, setDisabled] = React.useState(false);
   React.useEffect(() => {
     const checkReady = (enabled: boolean) => setDisabled(!enabled);
 
-    sm.attach("checkReady", checkReady);
-    setDisabled(!sm.state.checkReady);
+    sm().attach("checkReady", checkReady);
+    setDisabled(!sm().state.checkReady);
     return () => {
-      sm.detach("checkReady", checkReady);
+      sm().detach("checkReady", checkReady);
     };
   }, []);
+
+  const handlerClick = () => contest().check();
   return (
-    <Button disabled={disabled} onClick={contest.check}>
+    <Button disabled={disabled} onClick={handlerClick}>
       Check
     </Button>
   );
@@ -82,14 +72,17 @@ const ButtonBuildCase = () => {
       if (stagesDict[stage] < stagesDict["contest"]) return setDisabled(true);
       setDisabled(false);
     };
-    sm.attach("stage", getStage);
-    setDisabled(!sm.state.checkReady);
+    sm().attach("stage", getStage);
+    setDisabled(!sm().state.checkReady);
     return () => {
-      sm.detach("stage", getStage);
+      sm().detach("stage", getStage);
     };
   }, []);
+
+  const handleClick = () => contest().build();
+
   return (
-    <Button disabled={disabled} onClick={contest.build}>
+    <Button disabled={disabled} onClick={handleClick}>
       Rebuild test
     </Button>
   );
@@ -102,15 +95,15 @@ const ButtonStartContest = () => {
         return setDisabled(true);
       setDisabled(false);
     };
-    sm.attach("stage", getStage);
-    setDisabled(!sm.state.checkReady);
+    sm().attach("stage", getStage);
+    setDisabled(!sm().state.checkReady);
     return () => {
-      sm.detach("stage", getStage);
+      sm().detach("stage", getStage);
     };
   }, []);
 
   const handleClick = () => {
-    sm.state.stage = "contest";
+    sm().state.stage = "contest";
   };
   return (
     <Button disabled={disabled} onClick={handleClick}>
@@ -119,12 +112,14 @@ const ButtonStartContest = () => {
   );
 };
 export default function Menu() {
+  React.useEffect(() => {
+    sm();
+    parser();
+    contest();
+  }, []);
   return (
     <div>
-      <Link href="/">home</Link> / 
-      <Link href="/texts">texts</Link>
       <ButtonLoadFile />
-      {/* <ButtonSaveFile /> */}
       <ButtonCheck />
       <ButtonBuildCase />
       <ButtonStartContest />

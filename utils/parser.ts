@@ -1,3 +1,4 @@
+"use client";
 import sm, { StatePublic } from "@/StateManager";
 
 export function isLatinLetter(char: string) {
@@ -7,21 +8,21 @@ export function isLatinLetter(char: string) {
 class Parser {
   constructor() {
     this.parse = this.parse.bind(this);
-    sm.attach("stage", this.parse);
+    sm().attach("stage", this.parse);
   }
   pushWord(w: string) {
     if (!w) return;
     if (w.length > 1 || isLatinLetter(w))
-      sm.state.words.push(sm.state.textChunks.length);
-    sm.state.textChunks.push(w);
+      sm().state.words.push(sm().state.textChunks.length);
+    sm().state.textChunks.push(w);
   }
   parse(stage: StatePublic["stage"]) {
     if (stage != "fileloaded") return;
-    const text = sm.state.text;
-    sm.state.words.length = 0;
-    sm.state.textChunks.length = 0;
-    sm.state.paragraphs.length = 0;
-    sm.state.paragraphs.push(0);
+    const text = sm().state.text;
+    sm().state.words.length = 0;
+    sm().state.textChunks.length = 0;
+    sm().state.paragraphs.length = 0;
+    sm().state.paragraphs.push(0);
     const n = text.length,
       a = "a".charCodeAt(0),
       A = "A".charCodeAt(0),
@@ -38,7 +39,7 @@ class Parser {
         c == u
       ) {
         if (p) {
-          sm.state.paragraphs.push(sm.state.textChunks.length);
+          sm().state.paragraphs.push(sm().state.textChunks.length);
           p = false;
         }
         if (c == u && !w) this.pushWord(text[i]);
@@ -54,9 +55,18 @@ class Parser {
       }
     }
     this.pushWord(w);
-    sm.state.stage = "textparsed";
+    sm().state.stage = "textparsed";
   }
 }
+let inst : Parser | undefined;
+function getInstance(): Parser{
+  if (!inst) {
+    if (typeof window === "undefined") {
+      throw new Error("ConTest is not available on the server.");
+    }
+    inst = new Parser();
+  }
+  return inst;
+}
 
-const parser = new Parser();
-export default parser;
+export default getInstance;

@@ -17,12 +17,12 @@ const Place = ({ indx }: WordPlaceProps) => {
   const [word, setWord] = React.useState("");
 
   React.useEffect(() => {
-    contest.placesCb.set(indx, (action: "select" | "word", payload: number) => {
+    contest().placesCb.set(indx, (action: "select" | "word", payload: number) => {
       if (action == "word") {
         if (payload == -1) {
           setWord("");
         } else {
-          setWord(sm.state.textChunks[payload]);
+          setWord(sm().state.textChunks[payload]);
         }
       }
       if (action == "select") {
@@ -30,11 +30,11 @@ const Place = ({ indx }: WordPlaceProps) => {
         else setSelected(true);
       }
     });
-    if (contest.placeSelected == indx) setSelected(true);
+    if (contest().placeSelected == indx) setSelected(true);
   }, [indx]);
 
   const handleClick = () => {
-    contest.clickByPlace(indx, setSelected, setWord);
+    contest().clickByPlace(indx, setSelected, setWord);
   };
 
   return (
@@ -56,7 +56,7 @@ const Word = ({ word, indx }: WordPlaceProps) => {
   const isPlaceRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (!contest.placesSet.has(indx)) return;
+    if (!contest().placesSet.has(indx)) return;
     const getStage = (stage: StatePublic["stage"]) => {
       if (stagesDict[stage] < stagesDict["contest"]) {
         if (isPlaceRef.current) setIsPlace(false);
@@ -66,9 +66,9 @@ const Word = ({ word, indx }: WordPlaceProps) => {
         isPlaceRef.current = true;
       }
     };
-    sm.attach("stage", getStage);
+    sm().attach("stage", getStage);
     return () => {
-      sm.detach("stage", getStage);
+      sm().detach("stage", getStage);
     };
   }, [indx]);
   return isPlace ? (
@@ -85,18 +85,18 @@ const Paragraph = ({ indx }: { indx: number }) => {
 
   React.useEffect(() => {
     setWords(
-      sm.state.textChunks.slice(
-        sm.state.paragraphs[indx],
-        indx == sm.state.paragraphs.length - 1
-          ? sm.state.textChunks.length
-          : sm.state.paragraphs[indx + 1]
+      sm().state.textChunks.slice(
+        sm().state.paragraphs[indx],
+        indx == sm().state.paragraphs.length - 1
+          ? sm().state.textChunks.length
+          : sm().state.paragraphs[indx + 1]
       )
     );
   }, [indx]);
   return (
     <p className={styles.p}>
       {words.map((w, i) => (
-        <Word key={i} indx={sm.state.paragraphs[indx] + i} word={w} />
+        <Word key={i} indx={sm().state.paragraphs[indx] + i} word={w} />
       ))}
     </p>
   );
@@ -108,14 +108,14 @@ const Text = ({ className }: { className?: string }) => {
     const getParagraphs = (stage: StatePublic["stage"]) => {
       if (
         stagesDict[stage] >= stagesDict["caseready"] &&
-        sm.state.textChunks.length
+        sm().state.textChunks.length
       )
-        setP(sm.state.paragraphs.slice());
+        setP(sm().state.paragraphs.slice());
       else setP([]);
     };
-    sm.attach("stage", getParagraphs);
+    sm().attach("stage", getParagraphs);
     return () => {
-      sm.detach("stage", getParagraphs);
+      sm().detach("stage", getParagraphs);
     };
   }, []);
   return (

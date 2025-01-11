@@ -9,7 +9,7 @@ import classNames from "classnames";
 const Word = ({ indx }: { indx: number }) => {
   const [hidden, setHidden] = React.useState(false);
   React.useEffect(() => {
-    contest.wordsCb.set(indx, setHidden);
+    contest().wordsCb.set(indx, setHidden);
   }, [indx]);
 
   return (
@@ -17,11 +17,11 @@ const Word = ({ indx }: { indx: number }) => {
       <button
         className={styles.w}
         onClick={() => {
-          contest.clickByWord(indx);
+          contest().clickByWord(indx);
           setHidden(true);
         }}
       >
-        {sm.state.textChunks[indx]}
+        {sm().state.textChunks[indx]}
       </button>
       <div className={styles.space}>{"\u2004"}</div>
     </div>
@@ -39,11 +39,11 @@ const Words = ({ className }: { className?: string }) => {
         return;
       }
       loaded.current = true;
-      setWords(Array.from(contest.placesSet.keys()));
+      setWords(Array.from(contest().placesSet.keys()));
     };
-    sm.attach("stage", getWords);
+    sm().attach("stage", getWords);
     return () => {
-      sm.detach("stage", getWords);
+      sm().detach("stage", getWords);
     };
   }, []);
   return (
