@@ -91,9 +91,9 @@ const ButtonStartContest = () => {
   const [disabled, setDisabled] = React.useState(true);
   React.useEffect(() => {
     const getStage = (stage: StatePublic["stage"]) => {
-      if (stagesDict[stage] < stagesDict["textparsed"])
-        return setDisabled(true);
-      setDisabled(false);
+      if (stagesDict[stage] == stagesDict["caseready"])
+        return setDisabled(false);
+      setDisabled(true);
     };
     sm().attach("stage", getStage);
     setDisabled(!sm().state.checkReady);
@@ -103,6 +103,7 @@ const ButtonStartContest = () => {
   }, []);
 
   const handleClick = () => {
+    if (sm().state.stage != "caseready") return;
     sm().state.stage = "contest";
   };
   return (

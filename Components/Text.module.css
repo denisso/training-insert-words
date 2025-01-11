@@ -18,7 +18,7 @@
 }
 
 .outline {
-  outline: 1px solid white;
+  outline: 1px solid gray;
   min-width: 3rem;
   min-height: 1.5rem;
 }
