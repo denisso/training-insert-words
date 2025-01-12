@@ -1,16 +1,26 @@
 "use server";
 import sqlite3 from "sqlite3";
 
-export type TEXT = {
+type TextFieldsDB = {
   id: number;
   name: string;
-  text: string;
   length: number;
+  text: string;
 };
+
+export type TextInfo = Omit<TextFieldsDB, "text"> & {
+  group: number[];
+};
+
+export type TextContent = Pick<TextFieldsDB, "text">;
 
 const db = new sqlite3.Database("./db/db.sqlite");
 
-async function queryAll(query: ReturnType<typeof db.prepare>, ...args: string[]) {
+async function queryAll(
+  query: ReturnType<typeof db.prepare>,
+  ...args: string[]
+) {
+  "use server";
   return new Promise((resolve, reject) => {
     query.all(args, (err, rows) => {
       if (err) {
@@ -22,20 +32,37 @@ async function queryAll(query: ReturnType<typeof db.prepare>, ...args: string[])
   });
 }
 
-const selectTextsByName = db.prepare("SELECT * FROM text WHERE name LIKE ?");
+const selectAllTexts = db.prepare(`
+  SELECT t1.id, t1.name, t1.length, GROUP_CONCAT(t2.id_category) AS "group"
+  FROM text t1
+  LEFT JOIN text_category t2 ON t1.id = t2.id_text
+  GROUP BY t1.id
+`);
 
-export async function getTextsByName(name: string): Promise<TEXT[]> {
-  return queryAll(selectTextsByName, name) as Promise<TEXT[]>
+type TextShortDB = Omit<TextFieldsDB, "text"> & {
+  group: string;
+};
+export async function getAllTexts(): Promise<TextInfo[]> {
+  "use server";
+  return new Promise((resolve, reject) => {
+    (queryAll(selectAllTexts) as Promise<TextShortDB[]>)
+      .then((texts) => {
+        resolve(
+          texts.map((text) => {
+            return {
+              ...text,
+              group: text.group ? text.group.split(",").map(Number) : [],
+            };
+          })
+        );
+      })
+      .catch((e) => reject(e));
+  });
 }
 
 const selectTextByID = db.prepare("SELECT * FROM text WHERE id = ?");
 
-export async function getTextByID(id: string): Promise<TEXT> {
-  return queryAll(selectTextByID, id) as Promise<TEXT>
-}
-
-const selectAllTextShort = db.prepare("SELECT id, name, length FROM text");
-
-export async function getAllTexts(): Promise<TEXT[]> {
-  return queryAll(selectAllTextShort) as Promise<TEXT[]>
+export async function getTextByID(id: string): Promise<TextContent> {
+  "use server";
+  return queryAll(selectTextByID, id) as Promise<TextContent>;
 }

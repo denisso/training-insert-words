@@ -1,4 +1,6 @@
 "use client";
+import { TextInfo } from "@/db";
+
 type ObserverCallback<T, K extends keyof T> = (arg: T[K]) => void;
 
 abstract class StateManager<T extends object> {
@@ -95,7 +97,10 @@ export const stagesDict: Record<(typeof stages)[number], number> =
 
 export type StatePublic = {
   stage: (typeof stages)[number];
+  texts: TextInfo[];
+  initdb: boolean;
   timerSec: number;
+  // to contest
   text: string;
   textChunks: string[];
   paragraphs: number[];
@@ -121,7 +126,9 @@ function getInstance(): StateManagerPublic {
       throw new Error("StateManagerPublic is not available on the server.");
     }
     inst = new StateManagerPublic({
+      texts: [],
       text: "",
+      initdb: false,
       stage: "init",
       timerSec: 0,
       paragraphs: [],
