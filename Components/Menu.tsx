@@ -3,7 +3,6 @@ import React from "react";
 import sm, { StatePublic, stagesDict } from "@/StateManager";
 import settings from "@/settings";
 import Button from "./Button";
-import parser from "@/utils/parser";
 import contest from "@/utils/contest";
 import Timer from "./Timer";
 import State from "./State";
@@ -113,11 +112,7 @@ const ButtonStartContest = () => {
   );
 };
 export default function Menu() {
-  React.useEffect(() => {
-    sm();
-    parser();
-    contest();
-  }, []);
+
   return (
     <div>
       <ButtonLoadFile />

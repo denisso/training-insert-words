@@ -17,7 +17,7 @@ const Init = () => {
       })
       .catch((e) => e);
   }, []);
-  return <></>;
+  return null;
 };
 
 export default Init;
