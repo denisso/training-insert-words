@@ -1,6 +1,5 @@
 "use server";
-import sqlite3 from "sqlite3";
-import path from 'path';
+import { Client } from 'pg';
 
 type TextFieldsDB = {
   id: number;
@@ -18,80 +17,78 @@ export type TextsDict = {
 };
 export type TextContent = Pick<TextFieldsDB, "text">;
 
-const dbPath = path.join(process.cwd(), 'db', 'db.sqlite');
-const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
-  if (err) {
-    console.error('Error opening database', err);
-  } else {
-    console.log('Database opened successfully');
-  }
+const client = new Client({
+  connectionString: process.env.DATABASE_URL, 
+  ssl: { rejectUnauthorized: false }, 
 });
 
-async function queryAll(
-  query: ReturnType<typeof db.prepare>,
-  ...args: string[]
-) {
-  "use server";
-  return new Promise((resolve, reject) => {
-    query.all(args, (err, rows) => {
-      if (err) {
-        reject(err.message);
-      } else {
-        resolve(rows);
-      }
-    });
-  });
+
+client.connect()
+  .then(() => console.log('Connected to PostgreSQL database'))
+  .catch(err => console.error('Error connecting to database', err));
+
+
+async function queryAll(query: string, params: any[] = []) {
+  try {
+    const result = await client.query(query, params);
+    return result.rows;
+  } catch (err) {
+    console.error('Error executing query', err);
+    throw err;
+  }
 }
 
-const selectAllTexts = db.prepare(`
-  SELECT t1.id, t1.name, t1.length, GROUP_CONCAT(t2.id_category) AS "group"
+async function queryOne(query: string, params: any[] = []) {
+  try {
+    const result = await client.query(query, params);
+    return result.rows[0]; 
+  } catch (err) {
+    console.error('Error executing query', err);
+    throw err;
+  }
+}
+
+
+const selectAllTexts = `
+  SELECT t1.id, t1.name, t1.length, STRING_AGG(t2.id_category::text, ',') AS "group"
   FROM text t1
   LEFT JOIN text_category t2 ON t1.id = t2.id_text
   GROUP BY t1.id
-`);
+`;
 
 type TextShortDB = Omit<TextFieldsDB, "text"> & {
   group: string;
 };
+
 export async function getAllTexts(): Promise<TextsDict> {
-  "use server";
-  return new Promise((resolve, reject) => {
-    (queryAll(selectAllTexts) as Promise<TextShortDB[]>)
-      .then((texts) => {
-        const dict: TextsDict = {};
-        for (const text of texts) {
-          dict[text.id] = {
-            length: text.length,
-            group: text.group === null ? [] : text.group.split(",").map(Number),
-            name: text.name,
-          };
-        }
-        resolve(dict);
-      })
-      .catch((e) => reject(e));
-  });
-}
+  try {
+    const texts = await queryAll(selectAllTexts) as TextShortDB[];
+    const dict: TextsDict = {};
 
-async function queryOne(
-  query: ReturnType<typeof db.prepare>,
-  ...args: string[]
-) {
-  "use server";
-  return new Promise((resolve, reject) => {
-    query.get(args, (err, rows) => {
-      if (err) {
-        reject(err.message);
-      } else {
-        resolve(rows);
-      }
-    });
-  });
+    for (const text of texts) {
+      dict[text.id] = {
+        length: text.length,
+        group: text.group === null ? [] : text.group.split(",").map(Number),
+        name: text.name,
+      };
+    }
+
+    return dict;
+  } catch (err) {
+    console.error('Error fetching all texts', err);
+    throw err;
+  }
 }
 
 
-const selectTextByID = db.prepare("SELECT text FROM text WHERE id = ?");
+const selectTextByID = "SELECT text FROM text WHERE id = $1";
 
 export async function getTextByID(id: string): Promise<TextContent> {
-  "use server";
-  return queryOne(selectTextByID, id) as Promise<TextContent>;
+  try {
+    const result = await queryOne(selectTextByID, [id]) as TextContent;
+    return result;
+  } catch (err) {
+    console.error('Error fetching text by ID', err);
+    throw err;
+  }
 }
