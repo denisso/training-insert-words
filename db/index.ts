@@ -12,6 +12,9 @@ export type TextInfo = Omit<TextFieldsDB, "text"> & {
   group: number[];
 };
 
+export type TextsDict = {
+  [id: TextInfo["id"]]: Pick<TextInfo, "name" | "length" | "group">;
+};
 export type TextContent = Pick<TextFieldsDB, "text">;
 
 const db = new sqlite3.Database("./db/db.sqlite");
@@ -42,27 +45,45 @@ const selectAllTexts = db.prepare(`
 type TextShortDB = Omit<TextFieldsDB, "text"> & {
   group: string;
 };
-export async function getAllTexts(): Promise<TextInfo[]> {
+export async function getAllTexts(): Promise<TextsDict> {
   "use server";
   return new Promise((resolve, reject) => {
     (queryAll(selectAllTexts) as Promise<TextShortDB[]>)
       .then((texts) => {
-        resolve(
-          texts.map((text) => {
-            return {
-              ...text,
-              group: text.group ? text.group.split(",").map(Number) : [],
-            };
-          })
-        );
+        const dict: TextsDict = {};
+        for (const text of texts) {
+          dict[text.id] = {
+            length: text.length,
+            group: text.group === null ? [] : text.group.split(",").map(Number),
+            name: text.name,
+          };
+        }
+        resolve(dict);
       })
       .catch((e) => reject(e));
   });
 }
 
-const selectTextByID = db.prepare("SELECT * FROM text WHERE id = ?");
+async function queryOne(
+  query: ReturnType<typeof db.prepare>,
+  ...args: string[]
+) {
+  "use server";
+  return new Promise((resolve, reject) => {
+    query.get(args, (err, rows) => {
+      if (err) {
+        reject(err.message);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+
+
+const selectTextByID = db.prepare("SELECT text FROM text WHERE id = ?");
 
 export async function getTextByID(id: string): Promise<TextContent> {
   "use server";
-  return queryAll(selectTextByID, id) as Promise<TextContent>;
+  return queryOne(selectTextByID, id) as Promise<TextContent>;
 }

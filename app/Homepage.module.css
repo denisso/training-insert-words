@@ -1,0 +1,16 @@
+.box {
+  display: flex;
+  gap: 1rem;
+}
+
+.item {
+  flex: 1;
+}
+.header {
+  min-height: 200px;
+}
+
+.content {
+  flex: 1;
+  min-height: 400px;
+}

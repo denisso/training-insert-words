@@ -1,15 +1,13 @@
 "use client";
 import React from "react";
-import sm from "@/StateManager";
-import type { StatePublic } from "@/StateManager";
+import contest, { StateContest, stagesDict } from "@/utils/contest";
 import styles from "./Words.module.css";
-import contest from "@/utils/contest";
 import classNames from "classnames";
 
 const Word = ({ indx }: { indx: number }) => {
   const [hidden, setHidden] = React.useState(false);
   React.useEffect(() => {
-    contest().wordsCb.set(indx, setHidden);
+    contest().wordsStates.set(indx, setHidden);
   }, [indx]);
 
   return (
@@ -17,11 +15,11 @@ const Word = ({ indx }: { indx: number }) => {
       <button
         className={styles.w}
         onClick={() => {
-          contest().clickByWord(indx);
+          contest().wordClick(indx);
           setHidden(true);
         }}
       >
-        {sm().state.textChunks[indx]}
+        {contest().data.textChunks[indx]}
       </button>
       <div className={styles.space}>{"\u2004"}</div>
     </div>
@@ -30,21 +28,16 @@ const Word = ({ indx }: { indx: number }) => {
 
 const Words = ({ className }: { className?: string }) => {
   const [words, setWords] = React.useState<number[]>([]);
-  const loaded = React.useRef(false);
   React.useEffect(() => {
-    const getWords = function (stage: StatePublic["stage"]) {
-      if (stage != "contest") {
-        if (loaded.current) setWords([]);
-        loaded.current = false;
-        return;
+    const getWords = function (stage: StateContest["stage"]) {
+      if (stagesDict[stage] >= stagesDict["contestStarted"]){
+        setWords(Array.from(contest().matchSet.keys()));
       }
-      loaded.current = true;
-      setWords(Array.from(contest().placesSet.keys()));
+        
+      else setWords([]);
     };
-    sm().attach("stage", getWords);
-    return () => {
-      sm().detach("stage", getWords);
-    };
+    contest().sm.attach("stage", getWords);
+    return () => contest().sm.detach("stage", getWords);
   }, []);
   return (
     <div className={className}>

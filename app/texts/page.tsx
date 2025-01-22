@@ -1,9 +1,14 @@
 "use client";
 import React, { useTransition } from "react";
-import { getAllTexts, TEXT } from "@/db";
+import { getAllTexts, TextShort } from "@/db";
+
+const TextArea = () => {
+  
+  return <div contentEditable></div>
+}
 
 const List = () => {
-  const [texts, setTexts] = React.useState<TEXT[]>([]);
+  const [texts, setTexts] = React.useState<TextShort[]>([]);
   const [isPending, startTransition] = useTransition();
 
   const fetchTexts = () => {
@@ -12,6 +17,7 @@ const List = () => {
       setTexts(data);
     });
   };
+
 
   return (
     <div>
