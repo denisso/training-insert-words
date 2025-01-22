@@ -1,5 +1,6 @@
 "use server";
 import sqlite3 from "sqlite3";
+import path from 'path';
 
 type TextFieldsDB = {
   id: number;
@@ -17,7 +18,14 @@ export type TextsDict = {
 };
 export type TextContent = Pick<TextFieldsDB, "text">;
 
-const db = new sqlite3.Database("./db/db.sqlite");
+const dbPath = path.join(process.cwd(), 'db', 'db.sqlite');
+const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
+  if (err) {
+    console.error('Error opening database', err);
+  } else {
+    console.log('Database opened successfully');
+  }
+});
 
 async function queryAll(
   query: ReturnType<typeof db.prepare>,
