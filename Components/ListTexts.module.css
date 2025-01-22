@@ -1,4 +1,7 @@
-.box{
-    height: 400px;
-    overflow-y: auto;
+.box {
+  height: 400px;
+  overflow-y: auto;
+}
+.link{
+    font-weight: 900;
 }
