@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import sm from "@/StateManager";
-import parser from "@/utils/parser";
 import { getAllTexts } from "@/db";
 
 const Init = () => {
