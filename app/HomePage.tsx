@@ -1,9 +1,8 @@
 "use client";
 import React from "react";
 import ListTexts from "@/Components/ListTexts";
-import { TextInfo } from "@/db";
 import sm, { StatePublic } from "@/StateManager";
-import styles from "./Homepage.module.css";
+import styles from "./HomePage.module.css";
 
 const addToSelectedCb = (id: number) => {
   sm().state.textsSelected = [id, ...sm().state.textsSelected].sort(
@@ -29,64 +28,69 @@ const removeFromSelected = {
   name: "Remove from selected",
 };
 
-type ItemProps = {
-  className?: string;
-};
+class TextReducer<T> {
+  public state: number[] = [];
+  protected dispatch: ((texts: T) => void) | null = null;
 
-const TextsSelected = ({ className }: ItemProps) => {
-  const [texts, setTexts] = React.useState<TextInfo["id"][]>([]);
-  React.useEffect(() => {
-    const handler = (texts: StatePublic["textsSelected"]) => {
-      setTexts(texts);
-    };
-    sm().attach("textsSelected", handler);
-    setTexts(sm().state.textsSelected);
-    return () => {
-      sm().detach("textsSelected", handler);
-    };
-  }, []);
+  constructor() {
+    this.setState = this.setState.bind(this);
+  }
 
-  return (
-    <ListTexts
-      className={className}
-      name={"selected"}
-      texts={texts}
-      action={removeFromSelected}
-      link={{ href: "/contest/", name: "Start contest", slug: "id" }}
-    />
-  );
-};
+  setState(texts: StatePublic[ keyof StatePublic]) {
+    if (this.dispatch) this.dispatch(texts as T);
+  }
 
-const TextsAvailable = ({ className }: ItemProps) => {
-  const [texts, setTexts] = React.useState<TextInfo["id"][]>([]);
-  React.useEffect(() => {
-    const handler = (texts: StatePublic["textsAvailable"]) => {
-      setTexts(texts);
-    };
+  setDispatch(dispatch: (newState: T) => void, stateKey: keyof StatePublic) {
+    this.dispatch = dispatch;
+    dispatch(sm().state[stateKey] as T);
+    sm().attach(stateKey, this.setState);
+  }
 
-    sm().attach("textsAvailable", handler);
-    setTexts(sm().state.textsAvailable);
-    return () => {
-      sm().detach("textsAvailable", handler);
-    };
-  }, []);
+  unsetDispatch(stateKey: keyof StatePublic) {
+    this.dispatch = null;
+    sm().detach(stateKey, this.setState);
+  }
+}
+class TextsSelectedReducer extends TextReducer<StatePublic["textsSelected"]> {
+  setDispatch(dispatch: (newState: StatePublic["textsSelected"]) => void) {
+    super.setDispatch(dispatch, "textsSelected");
+  }
 
-  return (
-    <ListTexts
-      className={className}
-      name={"available"}
-      texts={texts}
-      action={addToSelected}
-      link={{ href: "/contest/", name: "Start contest", slug: "id" }}
-    />
-  );
-};
+  unsetDispatch() {
+    super.unsetDispatch("textsSelected");
+  }
+}
+
+class TextsAvailableReducer extends TextReducer<StatePublic["textsAvailable"]> {
+  setDispatch(dispatch: (newState: StatePublic["textsAvailable"]) => void) {
+    super.setDispatch(dispatch, "textsAvailable");
+  }
+
+  unsetDispatch() {
+    super.unsetDispatch("textsAvailable");
+  }
+}
 
 const HomePage = () => {
+  const reducerSelected = React.useRef(new TextsSelectedReducer());
+  const reducerAvailable = React.useRef(new TextsAvailableReducer());
+
   return (
     <div className={styles.box}>
-      <TextsAvailable className={styles.item} />
-      <TextsSelected className={styles.item} />
+      <ListTexts
+        className={styles.item}
+        name={"selected"}
+        reducer={reducerSelected.current}
+        action={removeFromSelected}
+        link={{ href: "/contest/", name: "Start contest", slug: "id" }}
+      />
+      <ListTexts
+        className={styles.item}
+        name={"available"}
+        reducer={reducerAvailable.current}
+        action={addToSelected}
+        link={{ href: "/contest/", name: "Start contest", slug: "id" }}
+      />
     </div>
   );
 };

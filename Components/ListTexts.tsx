@@ -6,7 +6,7 @@ import sm from "@/StateManager";
 import type { TextsDict } from "@/db";
 import styles from "./ListTexts.module.css";
 
-type Props = {
+type ListProps = {
   name: string;
   texts: TextInfo["id"][];
   action?: { cb: (id: number) => void; name: string };
@@ -14,7 +14,13 @@ type Props = {
   className?: string;
 };
 
-const ListTexts = ({ name, texts, action, link, className }: Props) => {
+export const ListTexts = ({
+  name,
+  texts,
+  action,
+  link,
+  className,
+}: ListProps) => {
   const [d, setDict] = React.useState<TextsDict>({});
   React.useEffect(() => {
     const handler = (dict: TextsDict) => {
@@ -63,4 +69,28 @@ const ListTexts = ({ name, texts, action, link, className }: Props) => {
   );
 };
 
-export default ListTexts;
+type ReducerProps = {
+  reducer: {
+    setDispatch: (dispatch: (texts: TextInfo["id"][]) => void) => void;
+    unsetDispatch: () => void;
+  };
+};
+const useStateReducer = (reducer: ReducerProps["reducer"]) => {
+  const [state, setState] = React.useState<TextInfo["id"][]>([]);
+  React.useEffect(() => {
+    reducer.setDispatch(setState);
+    return () => reducer.unsetDispatch();
+  }, []);
+  return state;
+};
+
+// pattern reducer state
+const ListTextStateReducer = ({
+  reducer,
+  ...props
+}: ReducerProps & Omit<ListProps, "texts">) => {
+  const texts = useStateReducer(reducer);
+  return <ListTexts texts={texts} {...props} />;
+};
+
+export default ListTextStateReducer;
