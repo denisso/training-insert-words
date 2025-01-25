@@ -28,69 +28,76 @@ const removeFromSelected = {
   name: "Remove from selected",
 };
 
-class TextReducer<T> {
-  public state: number[] = [];
+class SelectorTexts<T> {
   protected dispatch: ((texts: T) => void) | null = null;
 
   constructor() {
     this.setState = this.setState.bind(this);
   }
 
-  setState(texts: StatePublic[ keyof StatePublic]) {
+  setState(texts: StatePublic[keyof StatePublic]) {
     if (this.dispatch) this.dispatch(texts as T);
   }
 
-  setDispatch(dispatch: (newState: T) => void, stateKey: keyof StatePublic) {
+  attach(dispatch: (newState: T) => void, stateKey: keyof StatePublic) {
     this.dispatch = dispatch;
     dispatch(sm().state[stateKey] as T);
     sm().attach(stateKey, this.setState);
   }
 
-  unsetDispatch(stateKey: keyof StatePublic) {
+  detach(stateKey: keyof StatePublic) {
     this.dispatch = null;
     sm().detach(stateKey, this.setState);
   }
 }
-class TextsSelectedReducer extends TextReducer<StatePublic["textsSelected"]> {
-  setDispatch(dispatch: (newState: StatePublic["textsSelected"]) => void) {
-    super.setDispatch(dispatch, "textsSelected");
+class SelectorTextsSelected extends SelectorTexts<
+  StatePublic["textsSelected"]
+> {
+  attach(dispatch: (newState: StatePublic["textsSelected"]) => void) {
+    super.attach(dispatch, "textsSelected");
   }
 
-  unsetDispatch() {
-    super.unsetDispatch("textsSelected");
+  detach() {
+    super.detach("textsSelected");
   }
 }
 
-class TextsAvailableReducer extends TextReducer<StatePublic["textsAvailable"]> {
-  setDispatch(dispatch: (newState: StatePublic["textsAvailable"]) => void) {
-    super.setDispatch(dispatch, "textsAvailable");
+class SelectorTextsAvailable extends SelectorTexts<
+  StatePublic["textsAvailable"]
+> {
+  attach(dispatch: (newState: StatePublic["textsAvailable"]) => void) {
+    super.attach(dispatch, "textsAvailable");
   }
 
-  unsetDispatch() {
-    super.unsetDispatch("textsAvailable");
+  detach() {
+    super.detach("textsAvailable");
   }
 }
+
+const selectorTextsAvailable = new SelectorTextsAvailable(),
+  selectorTextsSelected = new SelectorTextsSelected();
 
 const HomePage = () => {
-  const reducerSelected = React.useRef(new TextsSelectedReducer());
-  const reducerAvailable = React.useRef(new TextsAvailableReducer());
-
   return (
     <div className={styles.box}>
-      <ListTexts
-        className={styles.item}
-        name={"selected"}
-        reducer={reducerSelected.current}
-        action={removeFromSelected}
-        link={{ href: "/contest/", name: "Start contest", slug: "id" }}
-      />
-      <ListTexts
-        className={styles.item}
-        name={"available"}
-        reducer={reducerAvailable.current}
-        action={addToSelected}
-        link={{ href: "/contest/", name: "Start contest", slug: "id" }}
-      />
+      <div className={styles.item}>
+        <div className={styles.name}>Selected</div>
+        <ListTexts
+          className={styles.list}
+          selector={selectorTextsSelected}
+          action={removeFromSelected}
+          link={{ href: "/contest/", name: "Start contest", slug: "id" }}
+        />
+      </div>
+      <div className={styles.item}>
+        <div className={styles.name}>Available</div>
+        <ListTexts
+          className={styles.list}
+          selector={selectorTextsAvailable}
+          action={addToSelected}
+          link={{ href: "/contest/", name: "Start contest", slug: "id" }}
+        />
+      </div>
     </div>
   );
 };
