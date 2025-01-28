@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Dev version available on [training-insert-words.vercel.app](https://training-insert-words.vercel.app/)
+A test in which part of the words are removed from a text, and then the user must restore the text by inserting the words in the appropriate places, develops several important skills:
 
-## Getting Started
+1. **Attention and concentration**
 
-First, run the development server:
+The user must carefully read the text to understand its meaning and correctly restore the missing words.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Context comprehension**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+It is necessary to analyze the context to determine which word best fits the gap.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Logical thinking**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Restoring the text requires logical analysis of sentence structure and the relationships between words.
 
-## Learn More
+4. **Language skills**
 
-To learn more about Next.js, take a look at the following resources:
+Improves understanding of grammar, syntax, and vocabulary, as the user needs to choose words that fit the rules of the language.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **Memory**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The user memorizes the content of the text to restore its coherence.
 
-## Deploy on Vercel
+6. **Critical thinking**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+It is necessary to evaluate how well the proposed words fit the meaning of the text.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+7. **Patience and perseverance**
+
+Such tasks require time and effort to complete, which helps develop patience.
+
+This type of task is useful for learning, developing language skills, and improving cognitive abilities.
