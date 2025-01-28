@@ -10,7 +10,12 @@ const Init = () => {
     getAllTexts()
       .then((texts) => {
         sm().state.texts = texts;
-        sm().state.textsAvailable = Object.keys(texts).map(Number);
+        sm().state.textsAvailable = Object.keys(texts).sort((a, b) => {
+          if (a.length === b.length) {
+            return a.localeCompare(b);
+          }
+          return a.length - b.length;
+        });
       })
       .catch((e) => e);
   }, []);

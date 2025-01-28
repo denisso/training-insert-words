@@ -8,7 +8,7 @@ import styles from "./ListTexts.module.css";
 
 type ListProps = {
   texts: TextInfo["id"][];
-  action?: { cb: (id: number) => void; name: string };
+  action?: { cb: (id: string) => void; name: string };
   link?: { name: string; href: string; slug: keyof TextInfo };
   className?: string;
 };

@@ -4,21 +4,29 @@ import ListTexts from "@/Components/ListTexts";
 import sm, { StatePublic } from "@/StateManager";
 import styles from "./HomePage.module.css";
 
-const addToSelectedCb = (id: number) => {
-  sm().state.textsSelected = [id, ...sm().state.textsSelected].sort(
-    (a, b) => a - b
-  );
+const addToSelectedCb = (id: string) => {
+  sm().state.textsSelected = [id, ...sm().state.textsSelected].sort((a, b) => {
+    if (a.length === b.length) {
+      return a.localeCompare(b);
+    }
+    return a.length - b.length;
+  });
   sm().state.textsAvailable = sm().state.textsAvailable.filter(
     (idrem) => idrem !== id
   );
 };
 
-const removeFromSelectedCb = (id: number) => {
+const removeFromSelectedCb = (id: string) => {
   sm().state.textsSelected = sm().state.textsSelected.filter(
     (idrem) => idrem !== id
   );
   sm().state.textsAvailable = [id, ...sm().state.textsAvailable].sort(
-    (a, b) => a - b
+    (a, b) => {
+      if (a.length === b.length) {
+        return a.localeCompare(b);
+      }
+      return a.length - b.length;
+    }
   );
 };
 

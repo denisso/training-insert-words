@@ -2,7 +2,7 @@
 import { Client } from 'pg';
 
 type TextFieldsDB = {
-  id: number;
+  id: string;
   name: string;
   length: number;
   text: string;
