@@ -62,14 +62,16 @@ export const ListTexts = ({ texts, action, link, className }: ListProps) => {
 type StateProps = {
   selector: {
     attach: (dispatch: (texts: TextInfo["id"][]) => void) => void;
-    detach: () => void;
+    detach?: () => void;
   };
 };
 const useState = (selector: StateProps["selector"]) => {
   const [state, setState] = React.useState<TextInfo["id"][]>([]);
   React.useEffect(() => {
     selector.attach(setState);
-    return () => selector.detach();
+    return () => {
+      if (selector.detach) selector.detach();
+    };
   }, []);
   return state;
 };
