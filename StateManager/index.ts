@@ -1,6 +1,6 @@
 "use client";
 import { TextInfo, TextsDict } from "@/db";
-
+import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
 type ObserverCallback<T, K extends keyof T> = (arg: T[K]) => void;
 
 export abstract class StateManager<T extends object> {
@@ -123,7 +123,6 @@ export abstract class StateManager<T extends object> {
   }
 }
 
-
 export type StatePublic = {
   // stage: (typeof stages)[number];
   texts: TextsDict;
@@ -140,21 +139,9 @@ class StateManagerPublic extends StateManager<StatePublic> {
   }
 }
 
-let inst: StateManagerPublic | undefined;
-
-function getInstance(): StateManagerPublic {
-  if (!inst) {
-    if (typeof window === "undefined") {
-      throw new Error("StateManagerPublic is not available on the server.");
-    }
-    inst = new StateManagerPublic({
-      texts: {},
-      textsAvailable: [],
-      textsSelected: [],
-      error: "",
-    });
-  }
-  return inst;
-}
-
-export default getInstance;
+export default clientSingletonBuilder(StateManagerPublic.name, StateManagerPublic, {
+  texts: {},
+  textsAvailable: [],
+  textsSelected: [],
+  error: "",
+});

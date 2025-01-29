@@ -1,7 +1,8 @@
 import { StateManager } from "@/StateManager";
+import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
 
 export type State = {
-  error: string;
+  textID: string;
 };
 
 class SMDashboard extends StateManager<State> {
@@ -12,18 +13,6 @@ class SMDashboard extends StateManager<State> {
   }
 }
 
-let inst: SMDashboard | undefined;
-
-function getInstance(): SMDashboard {
-  if (!inst) {
-    if (typeof window === "undefined") {
-      throw new Error("StateManagerPublic is not available on the server.");
-    }
-    inst = new SMDashboard({
-      error: "",
-    });
-  }
-  return inst;
-}
-
-export default getInstance;
+export default clientSingletonBuilder(SMDashboard.name, SMDashboard, {
+  textID: "",
+});
