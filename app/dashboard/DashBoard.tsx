@@ -3,9 +3,9 @@ import React, { useState, useRef, useEffect } from "react";
 import sm, { StatePublic } from "@/StateManager";
 import type { TextInfo } from "@/db";
 import ListTexts from "@/Components/ListTexts";
-
+import useConstructor from "@/utils/useConstructor";
 type Props = {
-  className: string;
+  className?: string;
   text: string;
 };
 
@@ -15,6 +15,7 @@ export const TextEditor = ({ className, text }: Props) => {
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newContent = event.target.innerHTML;
+    console.log(newContent);
     setContent(newContent);
   };
 
@@ -37,9 +38,7 @@ export const TextEditor = ({ className, text }: Props) => {
 type Dispatch = (newState: TextInfo["id"][]) => void;
 
 class Selector {
-  public dispatch: Dispatch | null = null;
   attach(dispatch: Dispatch) {
-    this.dispatch = dispatch;
     sm().attach("texts", (texts: StatePublic["texts"]) => {
       dispatch(
         Object.keys(texts).sort((a, b) => {
@@ -51,16 +50,13 @@ class Selector {
       );
     });
   }
-  detach() {
-    this.dispatch = null;
-  }
 }
 
-const selector = new Selector();
-
 const DashBoard = () => {
+  const selector = useConstructor(Selector);
   return (
     <div>
+      <TextEditor text="" />
       <ListTexts selector={selector} />
     </div>
   );

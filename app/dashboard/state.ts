@@ -13,6 +13,6 @@ class SMDashboard extends StateManager<State> {
   }
 }
 
-export default clientSingletonBuilder(SMDashboard.name, SMDashboard, {
+export default clientSingletonBuilder(SMDashboard, {
   textID: "",
 });

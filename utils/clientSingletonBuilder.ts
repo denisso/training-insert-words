@@ -1,5 +1,4 @@
 function clientSingletonBuilder<TConstructor, Args>(
-  name: string,
   Constructor: new (args: Args) => TConstructor,
   args: Args
 ): () => TConstructor {
@@ -7,7 +6,7 @@ function clientSingletonBuilder<TConstructor, Args>(
   return () => {
     if (!inst) {
       if (typeof window === "undefined") {
-        throw new Error(name + " is not available on the server.");
+        throw new Error(Constructor.name + " is not available on the server.");
       }
       inst = new Constructor(args);
     }

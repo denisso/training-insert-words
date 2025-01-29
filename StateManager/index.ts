@@ -139,7 +139,7 @@ class StateManagerPublic extends StateManager<StatePublic> {
   }
 }
 
-export default clientSingletonBuilder(StateManagerPublic.name, StateManagerPublic, {
+export default clientSingletonBuilder(StateManagerPublic, {
   texts: {},
   textsAvailable: [],
   textsSelected: [],
