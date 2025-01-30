@@ -38,17 +38,22 @@ export const ListTexts = ({ texts, action, link, className }: ListProps) => {
         if (!text) return null;
         return (
           <div className={styles.items} key={id}>
-            {text.name} {" / "} Number Words: {text.length} {" / "}
+            {text.name} {" / "} Number Words: {text.length}
             {link ? (
-              <Link href={link.href + id} className={styles.link}>
-                {link.name}
-              </Link>
+              <>
+                {" / "}
+                <Link href={link.href + id} className={styles.link}>
+                  {link.name}
+                </Link>
+              </>
             ) : (
               <></>
             )}
-            {" / "}
             {action ? (
-              <button onClick={() => action.cb(id)}>{action.name}</button>
+              <>
+                {" / "}
+                <button onClick={() => action.cb(id)}>{action.name}</button>
+              </>
             ) : (
               <></>
             )}
