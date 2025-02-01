@@ -4,23 +4,31 @@ import sm, { StatePublic } from "@/StateManager";
 import type { TextInfo } from "@/db";
 import ListTexts from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
+import smd, { SMDState } from "./state";
+import { getTextByID } from "@/db";
+
 type Props = {
   className?: string;
   text: string;
 };
 
-export const TextEditor = ({ className, text }: Props) => {
+
+
+const TextEditor = ({ className, text }: Props) => {
   const [content, setContent] = useState(text);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newContent = event.target.innerHTML;
-    console.log(newContent);
+  useEffect(() => {
+    setContent(text);
+  }, [text]);
+
+  const handleInput = (event: React.SyntheticEvent<HTMLDivElement>) => {
+    const newContent = event.currentTarget.innerHTML;
     setContent(newContent);
   };
 
   useEffect(() => {
-    if (contentRef.current) {
+    if (contentRef.current && contentRef.current.innerHTML !== content) {
       contentRef.current.innerHTML = content;
     }
   }, [content]);
@@ -33,6 +41,27 @@ export const TextEditor = ({ className, text }: Props) => {
       className={className}
     />
   );
+};
+
+
+
+
+const ProxyTextEditor = () => {
+  const [text, setText] = React.useState("");
+  React.useEffect(() => {
+    const handle = (textId: SMDState["textID"]) => {
+      if (sm().state.texts[textId]) {
+        getTextByID(textId).then(({text}) => {
+          setText(text);
+        });
+      } else {
+        setText("text not found");
+      }
+    };
+    smd().attach("textID", handle);
+    return () => smd().detach("textID", handle);
+  }, []);
+  return <TextEditor text={text} />;
 };
 
 type Dispatch = (newState: TextInfo["id"][]) => void;
@@ -52,12 +81,18 @@ class Selector {
   }
 }
 
+const pushToTextEditor = {
+  cb: (id: string) => {
+    smd().state.textID = id;
+  },
+  name: "push to editor",
+};
 const DashBoard = () => {
   const selector = useConstructor(Selector);
   return (
     <div>
-      <TextEditor text="" />
-      <ListTexts selector={selector} />
+      <ProxyTextEditor />
+      <ListTexts selector={selector} action={pushToTextEditor} />
     </div>
   );
 };

@@ -1,15 +1,15 @@
 import { StateManager } from "@/StateManager";
 import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
 
-export type State = {
+export type SMDState = {
   textID: string;
 };
 
-class SMDashboard extends StateManager<State> {
-  public state: State;
-  constructor(state: State) {
+class SMDashboard extends StateManager<SMDState> {
+  public state: SMDState;
+  constructor(state: SMDState) {
     super(state);
-    this.state = this._buildRoot() as State;
+    this.state = this._buildRoot() as SMDState;
   }
 }
 
