@@ -1,67 +1,79 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import sm, { StatePublic } from "@/StateManager";
 import type { TextInfo } from "@/db";
 import ListTexts from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
-import smd, { SMDState } from "./state";
-import { getTextByID } from "@/db";
+import smd, { textUpdate } from "./state";
+import { getTextByID, updtaeTextById } from "@/db";
+import styles from "./DashBoard.module.css";
 
 type Props = {
   className?: string;
-  text: string;
+  textID: string;
 };
 
-
-
-const TextEditor = ({ className, text }: Props) => {
-  const [content, setContent] = useState(text);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setContent(text);
-  }, [text]);
+const TextEditor = ({ className, textID }: Props) => {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const textRef = React.useRef("");
+  const [textChanged, setTextChanged] = React.useState(false);
+  React.useEffect(() => {
+    if (!sm().state.texts[textID]) {
+      if (contentRef.current !== null)
+        contentRef.current.innerHTML = "text not found";
+      return;
+    }
+    getTextByID(textID).then(({ text }) => {
+      if (contentRef.current !== null) contentRef.current.innerHTML = text;
+    });
+  }, [textID]);
 
   const handleInput = (event: React.SyntheticEvent<HTMLDivElement>) => {
-    const newContent = event.currentTarget.innerHTML;
-    setContent(newContent);
+    setTextChanged(true);
+    textRef.current = event.currentTarget.innerHTML;
+    textUpdate("input");
   };
 
-  useEffect(() => {
-    if (contentRef.current && contentRef.current.innerHTML !== content) {
-      contentRef.current.innerHTML = content;
-    }
-  }, [content]);
-
+  const handleUpdate = () => {
+    if (!contentRef.current) return;
+    setTextChanged(false);
+    if (textID !== "") updtaeTextById(textID, contentRef.current.innerHTML);
+  };
   return (
-    <div
-      ref={contentRef}
-      contentEditable={true}
-      onInput={handleInput}
-      className={className}
-    />
+    <>
+      <div
+        ref={contentRef}
+        contentEditable={true}
+        onInput={handleInput}
+        className={className}
+      />
+      {textChanged ? <button onClick={handleUpdate}>Update</button> : <></>}
+    </>
   );
 };
 
+type ProxyProps = {
+  className?: string;
+};
 
+const ProxyTextEditor = ({ className }: ProxyProps) => {
+  const [textId, setTextId] = React.useState("");
 
-
-const ProxyTextEditor = () => {
-  const [text, setText] = React.useState("");
   React.useEffect(() => {
-    const handle = (textId: SMDState["textID"]) => {
-      if (sm().state.texts[textId]) {
-        getTextByID(textId).then(({text}) => {
-          setText(text);
-        });
-      } else {
-        setText("text not found");
-      }
+    const handleTextPush = () => {
+      if (smd().state.textChangeReason != "push") return;
+
+      //   if(textChangedRef.current){
+      //     // not implemented yet
+      setTextId(smd().state.textID);
+      //     // logic ask question save current data text
+      //   }
     };
-    smd().attach("textID", handle);
-    return () => smd().detach("textID", handle);
+    smd().attach("textUpdateTick", handleTextPush);
+    return () => smd().detach("textUpdateTick", handleTextPush);
   }, []);
-  return <TextEditor text={text} />;
+
+  return <TextEditor textID={textId} className={className} />;
 };
 
 type Dispatch = (newState: TextInfo["id"][]) => void;
@@ -83,16 +95,21 @@ class Selector {
 
 const pushToTextEditor = {
   cb: (id: string) => {
-    smd().state.textID = id;
+    textUpdate("push", id);
   },
-  name: "push to editor",
+  name: "Push to editor",
 };
+
 const DashBoard = () => {
   const selector = useConstructor(Selector);
   return (
-    <div>
-      <ProxyTextEditor />
-      <ListTexts selector={selector} action={pushToTextEditor} />
+    <div className={styles.box}>
+      <ListTexts
+        selector={selector}
+        action={pushToTextEditor}
+        className={styles.item}
+      />
+      <ProxyTextEditor className={styles.item} />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 "use server";
-import { Client } from 'pg';
+import { Client } from "pg";
 
 type TextFieldsDB = {
   id: string;
@@ -19,21 +19,23 @@ export type TextContent = Pick<TextFieldsDB, "text">;
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
 });
 
-
-client.connect()
-  .then(() => console.log('Connected to PostgreSQL database'))
-  .catch(err => console.error('Error connecting to database', err));
-
+client
+  .connect()
+  .then(() => console.log("Connected to PostgreSQL database"))
+  .catch((err) => console.error("Error connecting to database", err));
 
 async function queryAll(query: string, params: any[] = []) {
   try {
     const result = await client.query(query, params);
     return result.rows;
   } catch (err) {
-    console.error('Error executing query', err);
+    console.error("Error executing query", err);
     throw err;
   }
 }
@@ -41,13 +43,12 @@ async function queryAll(query: string, params: any[] = []) {
 async function queryOne(query: string, params: any[] = []) {
   try {
     const result = await client.query(query, params);
-    return result.rows[0]; 
+    return result.rows[0];
   } catch (err) {
-    console.error('Error executing query', err);
+    console.error("Error executing query", err);
     throw err;
   }
 }
-
 
 const selectAllTexts = `
   SELECT t1.id, t1.name, t1.length, STRING_AGG(t2.id_category::text, ',') AS "group"
@@ -62,7 +63,7 @@ type TextShortDB = Omit<TextFieldsDB, "text"> & {
 
 export async function getAllTexts(): Promise<TextsDict> {
   try {
-    const texts = await queryAll(selectAllTexts) as TextShortDB[];
+    const texts = (await queryAll(selectAllTexts)) as TextShortDB[];
     const dict: TextsDict = {};
 
     for (const text of texts) {
@@ -75,20 +76,36 @@ export async function getAllTexts(): Promise<TextsDict> {
 
     return dict;
   } catch (err) {
-    console.error('Error fetching all texts', err);
+    console.error("Error fetching all texts", err);
     throw err;
   }
 }
-
 
 const selectTextByID = "SELECT text FROM text WHERE id = $1";
 
 export async function getTextByID(id: string): Promise<TextContent> {
   try {
-    const result = await queryOne(selectTextByID, [id]) as TextContent;
+    const result = (await queryOne(selectTextByID, [id])) as TextContent;
     return result;
   } catch (err) {
-    console.error('Error fetching text by ID', err);
+    console.error("Error get text by ID", err);
+    throw err;
+  }
+}
+
+const updateQueryText = `
+  UPDATE "text"
+  SET "text" = $2
+  WHERE "id" = $1
+  RETURNING *;
+`;
+
+export async function updtaeTextById(id: string, tetx: string )  {
+  try {
+    const result = (await queryOne(updateQueryText, [id, tetx])) as TextContent;
+    return result;
+  } catch (err) {
+    console.error("Error updtae text by ID", err);
     throw err;
   }
 }
