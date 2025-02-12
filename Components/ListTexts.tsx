@@ -39,23 +39,19 @@ export const ListTexts = ({ texts, action, link, className }: ListProps) => {
         return (
           <div className={styles.items} key={id}>
             {text.name} {" / "} Number Words: {text.length}
-            {link ? (
+            {link && (
               <>
                 {" / "}
                 <Link href={link.href + id} className={styles.link}>
                   {link.name}
                 </Link>
               </>
-            ) : (
-              <></>
             )}
-            {action ? (
+            {action && (
               <>
                 {" / "}
                 <button onClick={() => action.cb(id)}>{action.name}</button>
               </>
-            ) : (
-              <></>
             )}
           </div>
         );

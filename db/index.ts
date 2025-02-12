@@ -1,15 +1,15 @@
 "use server";
 import { Client } from "pg";
 
-type TextFieldsDB = {
+export type TextFieldsDB = {
   id: string;
   name: string;
-  length: number;
+  length: string;
   text: string;
 };
 
 export type TextInfo = Omit<TextFieldsDB, "text"> & {
-  group: number[];
+  group: string[];
 };
 
 export type TextsDict = {
@@ -69,7 +69,7 @@ export async function getAllTexts(): Promise<TextsDict> {
     for (const text of texts) {
       dict[text.id] = {
         length: text.length,
-        group: text.group === null ? [] : text.group.split(",").map(Number),
+        group: text.group === null ? [] : text.group.split(","),
         name: text.name,
       };
     }

@@ -129,6 +129,13 @@ export type StatePublic = {
   textsAvailable: TextInfo["id"][];
   textsSelected: TextInfo["id"][];
   error: string;
+  modal: {
+    title: string;
+    text: string;
+    onOk: () => void;
+    onCancel?: () => void;
+    btns?: { text: "string"; cb: () => void }[];
+  } | null;
 };
 
 class StateManagerPublic extends StateManager<StatePublic> {
@@ -144,4 +151,5 @@ export default clientSingletonBuilder(StateManagerPublic, {
   textsAvailable: [],
   textsSelected: [],
   error: "",
+  modal: null,
 });
