@@ -64,8 +64,7 @@ export const textChange = (
         },
         onCancel: () => textChanged(reason, id),
       });
-    } else {
-    }
+    } 
   }
   if (id) smd().state.textID = id;
   if (reason == "input") smd().state.textChanged = true;

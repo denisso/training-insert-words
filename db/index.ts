@@ -100,12 +100,29 @@ const updateQueryText = `
   RETURNING *;
 `;
 
-export async function updtaeTextById(id: string, tetx: string )  {
+export async function updtaeTextById(id: string, text: string )  {
   try {
-    const result = (await queryOne(updateQueryText, [id, tetx])) as TextContent;
+    const result = (await queryOne(updateQueryText, [id, text])) as TextContent;
     return result;
   } catch (err) {
     console.error("Error updtae text by ID", err);
+    throw err;
+  }
+}
+
+const queryInsert = `
+INSERT INTO text (name, text)
+VALUES ($1, $2)
+RETURNING *;
+`;
+
+export async function insertText(name: string, text: string) {
+  try{
+    const result = (await queryOne(queryInsert, [name, text])) as TextContent;
+    return result;
+  }
+  catch(err){
+    console.error("Error insert text by ID", err);
     throw err;
   }
 }

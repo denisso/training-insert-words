@@ -1,12 +1,13 @@
 "use client";
 import React from "react";
 import sm, { StatePublic } from "@/StateManager";
-import type { TextInfo } from "@/db";
+import { insertText, TextInfo } from "@/db";
 import ListTexts from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
 import { textChange } from "./state";
 import TextEditor from "./Editor";
 import styles from "./DashBoard.module.css";
+import classNames from "classnames";
 
 type Dispatch = (newState: TextInfo["id"][]) => void;
 
@@ -32,23 +33,57 @@ const pushToTextEditorCallBack = {
   name: "Push to editor",
 };
 
+type EditorProps = {
+  className: string;
+};
+
+const Editor = ({ className }: EditorProps) => {
+  return (
+    <div className={className}>
+      <div className={styles.name}>
+        <input type="text" className={styles.input} />
+        <button className="reset">Reset</button>
+      </div>
+      <TextEditor className={styles.editorElement} />
+    </div>
+  );
+};
+
+const EditorButtons = ({ className }: EditorProps) => {
+  const onNewText = () => {
+    textChange("new");
+  };
+  const onSaveText = () => {
+    insertText;
+    textChange("push");
+  };
+  return (
+    <div className={className}>
+      <button onClick={onNewText}>New text</button>
+      <button onClick={onSaveText}>Save text</button>
+      <span className="text">Editor</span>
+    </div>
+  );
+};
+
 const DashBoard = () => {
   const selector = useConstructor(Selector);
 
   return (
     <>
-      <div className={styles.box}>
-        <div className={styles.item}>List texts</div>
-        <div className={styles.item}></div>
-        Editor
+      <div className={classNames(styles.box, styles.header)}>
+        <div className={styles.item}>
+          <span className="text">List texts</span>
+        </div>
+        <EditorButtons className={classNames(styles.item, styles.editor)} />
       </div>
-      <div className={styles.box}>
+      <div className={classNames(styles.box, styles.content)}>
         <ListTexts
           selector={selector}
           action={pushToTextEditorCallBack}
           className={styles.item}
         />
-        <TextEditor className={styles.item} />
+        <Editor className={classNames(styles.item, styles.editor)} />
       </div>
     </>
   );
