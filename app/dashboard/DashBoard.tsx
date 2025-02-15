@@ -4,7 +4,7 @@ import sm, { StatePublic } from "@/StateManager";
 import { insertText, TextInfo } from "@/db";
 import ListTexts from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
-import { textChange } from "./state";
+import smd, { textChange, SMDState } from "./state";
 import TextEditor from "./Editor";
 import styles from "./DashBoard.module.css";
 import classNames from "classnames";
@@ -38,10 +38,23 @@ type EditorProps = {
 };
 
 const Editor = ({ className }: EditorProps) => {
+  const [name, setName] = React.useState("");
+  React.useEffect(() => {
+    const handleText = (textID: SMDState["textID"]) => {
+      setName(textID);
+    };
+    smd().attach("textID", handleText);
+    return smd().detach("textID", handleText);
+  }, []);
   return (
     <div className={className}>
       <div className={styles.name}>
-        <input type="text" className={styles.input} />
+        <input
+          type="text"
+          className={styles.input}
+          onChange={(e) => setName(e.target.value)}
+          value={name}
+        />
         <button className="reset">Reset</button>
       </div>
       <TextEditor className={styles.editorElement} />
@@ -54,7 +67,7 @@ const EditorButtons = ({ className }: EditorProps) => {
     textChange("new");
   };
   const onSaveText = () => {
-    insertText;
+    // insertText;
     textChange("push");
   };
   return (

@@ -49,7 +49,6 @@ export const textChange = (
   reason: SMDState["textChangeReason"],
   id: string = ""
 ) => {
-  
   smd().state.textChangeReason = reason;
   if (reason == "new" || reason == "push") {
     // check changes in editor
@@ -58,13 +57,14 @@ export const textChange = (
         title: "Attention",
         text: "save changes?",
         onOk: () => {
+          if (reason == "new") smd().state.textID = "";
           const getText = smd().state.getText;
           if (getText !== null) updtaeTextById(smd().state.textID, getText());
           textChanged(reason, id);
         },
         onCancel: () => textChanged(reason, id),
       });
-    } 
+    }
   }
   if (id) smd().state.textID = id;
   if (reason == "input") smd().state.textChanged = true;
