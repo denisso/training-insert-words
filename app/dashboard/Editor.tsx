@@ -1,55 +1,8 @@
 import React from "react";
-import smd, { textChange, SMDState } from "./state";
+import smd, { changeText, SMDState } from "./state";
 import sm from "@/StateManager";
 import throttle from "@/utils/throttle";
-import { getTextByID, TextFieldsDB, updtaeTextById } from "@/db";
-
-type TextNewProps = {
-  className: string;
-};
-
-export const NewBtn = ({ className }: TextNewProps) => {
-  const onClick = () => {
-    if (smd().state.textChanged) {
-    } else {
-    }
-  };
-  return (
-    <button onClick={onClick} className={className}>
-      New
-    </button>
-  );
-};
-
-type TextUpdateProps = {
-  className: string;
-};
-
-export const SaveChagesBtn = ({ className }: TextUpdateProps) => {
-  const [enable, setEnable] = React.useState(false);
-  React.useEffect(() => {
-    const onTextChanged = (changed: SMDState["textChanged"]) => {
-      setEnable(changed);
-    };
-    smd().attach("textChanged", onTextChanged);
-    return () => smd().detach("textChanged", onTextChanged);
-  }, []);
-  const onClick = () => {
-    smd().state.textChanged = false;
-    const getText = smd().state.getText;
-    if (getText === null) return;
-    updtaeTextById(smd().state.textID, getText());
-  };
-  return (
-    <>
-      {enable && (
-        <button onClick={onClick} className={className}>
-          Update
-        </button>
-      )}
-    </>
-  );
-};
+import { getDbTextByID, TextFieldsDB, updateDBTextById } from "@/db";
 
 type TextFieldProps = {
   className: string;
@@ -71,13 +24,13 @@ export const TextField = ({ key, className }: TextFieldProps) => {
   return <div className={className}>{state}</div>;
 };
 
+const textChangeThrottle = throttle(() => changeText("input"));
+
+const MessageErrorEditorRef = "Editor ref not valid";
+
 type Props = {
   className?: string;
 };
-
-const textChangeThrottle = throttle(() => textChange("input"));
-
-const MessageErrorEditorRef = "Editor ref not valid";
 
 const TextEditor = ({ className }: Props) => {
   const contentRef = React.useRef<HTMLDivElement>(null);
@@ -92,11 +45,12 @@ const TextEditor = ({ className }: Props) => {
       contentRef.current.innerHTML = text;
     };
     const handleTick = () => {
-      if (smd().state.textChangeReason == "new") {
+      const reason = smd().state.textChangeReason;
+      if (reason == "new") {
         setText("");
       }
-      if (smd().state.textChangeReason == "push")
-        getTextByID(smd().state.textID)
+      if (reason == "push")
+        getDbTextByID(smd().state.textID)
           .then(({ text }) => {
             setText(text);
           })

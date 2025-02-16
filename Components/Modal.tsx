@@ -4,6 +4,8 @@ import ReactDOM from "react-dom";
 import styles from "./Modal.module.css";
 import sm, { StatePublic } from "@/StateManager";
 
+
+
 const Modal = () => {
   const [display, setDisplay] = React.useState<"none" | "flex">("none");
   const modalRef = React.useRef<StatePublic["modal"]>(null);
@@ -28,20 +30,22 @@ const Modal = () => {
       document.removeEventListener("keydown", handleEscape);
     };
   }, []);
-
+  const done = () => {
+    sm().state.modal = null;
+  }
   const onCancel = () => {
     const modal = sm().state.modal;
-    if (modal?.onCancel) modal.onCancel();
-    sm().state.modal = null;
+    if (modal?.onCancel) modal.onCancel(done);
+
   };
   const onOk = () => {
     const modal = sm().state.modal;
-    if (modal?.onOk) modal?.onOk();
-    sm().state.modal = null;
+    if (modal?.onOk) modal?.onOk(done);
+
   };
   const onClickOverlay = (e: React.MouseEvent) => {
     if (e.target !== overlayRef.current) return;
-    sm().state.modal = null;
+    done()
   };
   return (
     portalDom !== null &&

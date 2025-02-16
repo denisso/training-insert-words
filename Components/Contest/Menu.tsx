@@ -2,7 +2,7 @@
 import React from "react";
 import Button from "../Button";
 import contest, { StateContest, stagesDict } from "@/utils/contest";
-import { getTextByID } from "@/db";
+import { getDbTextByID } from "@/db";
 import Timer from "./Timer";
 import State from "./State";
 
@@ -81,7 +81,7 @@ type Props = {
 
 export default function Menu({ textId }: Props) {
   React.useEffect(() => {
-    getTextByID(textId)
+    getDbTextByID(textId)
       .then(({ text }) => {
         contest().loadText(text);
       })

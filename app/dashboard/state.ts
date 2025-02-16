@@ -1,6 +1,6 @@
 import sm, { StateManager } from "@/StateManager";
 import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
-import { updtaeTextById } from "@/db";
+import { updateDBTextByIdBoolean } from "@/db";
 
 export type SMDState = {
   textID: string;
@@ -18,6 +18,8 @@ export type SMDState = {
   // assigned by in TextEditor Effect mount
   // uses in save changes button
   getText: (() => string) | null;
+  getName: (() => string) | null;
+  awaitSave: boolean;
 };
 
 class SMDashboard extends StateManager<SMDState> {
@@ -34,40 +36,59 @@ const smd = clientSingletonBuilder(SMDashboard, {
   textUpdateTick: false,
   textChanged: false,
   getText: null,
+  getName: null,
+  awaitSave: false,
 });
 
 export default smd;
 
-const textChanged = (reason: SMDState["textChangeReason"], id: string = "") => {
+const changeStateText = (reason: SMDState["textChangeReason"], id: string) => {
   smd().state.textChangeReason = reason;
-  smd().state.textID = id;
-  smd().state.textChanged = false;
+  // for reason "input" textID = no change
+  if (reason == "new") smd().state.textID = "";
+  else if (reason == "push" || reason == "save") smd().state.textID = id;
+  if (smd().state.textID === "" || reason == "input")
+    smd().state.textChanged = true;
+  else smd().state.textChanged = false;
   smd().state.textUpdateTick = !smd().state.textUpdateTick;
 };
 
-export const textChange = (
+export const saveTextToDB = (done: () => void) => {
+  const getText = smd().state.getText,
+    getName = smd().state.getName;
+  if (getText && getName)
+    updateDBTextByIdBoolean(smd().state.textID, getName(), getText())
+      .then(() => {
+        // handle new or existing text
+      })
+      .catch((e) => console.log(e))
+      .finally(done);
+};
+
+const openModal = (reason: SMDState["textChangeReason"], id: string) => {
+  sm().state.modal = {
+    title: "Attention",
+    text: "save changes?",
+    onOk: (done) => {
+      saveTextToDB(done);
+    },
+    onCancel: () => {
+      changeStateText(reason, id);
+    },
+  };
+};
+
+export const changeText = (
   reason: SMDState["textChangeReason"],
   id: string = ""
 ) => {
-  smd().state.textChangeReason = reason;
   if (reason == "new" || reason == "push") {
-    // check changes in editor
     if (smd().state.textChanged) {
-      return (sm().state.modal = {
-        title: "Attention",
-        text: "save changes?",
-        onOk: () => {
-          if (reason == "new") smd().state.textID = "";
-          const getText = smd().state.getText;
-          if (getText !== null) updtaeTextById(smd().state.textID, getText());
-          textChanged(reason, id);
-        },
-        onCancel: () => textChanged(reason, id),
-      });
+      return openModal(reason, id);
+    } else {
+      changeStateText(reason, id);
     }
+  } else {
+    changeStateText(reason, id);
   }
-  if (id) smd().state.textID = id;
-  if (reason == "input") smd().state.textChanged = true;
-  else smd().state.textChanged = false;
-  smd().state.textUpdateTick = !smd().state.textUpdateTick;
 };

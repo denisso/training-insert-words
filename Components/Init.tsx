@@ -1,13 +1,13 @@
 "use client";
 import React from "react";
 import sm from "@/StateManager";
-import { getAllTexts } from "@/db";
+import { getDbAllTexts } from "@/db";
 
 const Init = () => {
   React.useEffect(() => {
     sm();
     // contest();
-    getAllTexts()
+    getDbAllTexts()
       .then((texts) => {
         sm().state.texts = texts;
         sm().state.textsAvailable = Object.keys(texts).sort((a, b) => {

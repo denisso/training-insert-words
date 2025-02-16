@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
 import sm, { StatePublic } from "@/StateManager";
-import { insertText, TextInfo } from "@/db";
+import { TextInfo } from "@/db";
 import ListTexts from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
-import smd, { textChange, SMDState } from "./state";
+import smd, { changeText, saveTextToDB } from "./state";
 import TextEditor from "./Editor";
 import styles from "./DashBoard.module.css";
 import classNames from "classnames";
@@ -28,7 +28,7 @@ class Selector {
 
 const pushToTextEditorCallBack = {
   cb: (id: string) => {
-    textChange("push", id);
+    changeText("push", id);
   },
   name: "Push to editor",
 };
@@ -38,13 +38,12 @@ type EditorProps = {
 };
 
 const Editor = ({ className }: EditorProps) => {
-  const [name, setName] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
   React.useEffect(() => {
-    const handleText = (textID: SMDState["textID"]) => {
-      setName(textID);
-    };
-    smd().attach("textID", handleText);
-    return smd().detach("textID", handleText);
+    smd().state.getName = () =>
+      inputRef.current ? inputRef.current.value : "";
+    
   }, []);
   return (
     <div className={className}>
@@ -52,8 +51,7 @@ const Editor = ({ className }: EditorProps) => {
         <input
           type="text"
           className={styles.input}
-          onChange={(e) => setName(e.target.value)}
-          value={name}
+          onChange={() => changeText("input")}
         />
         <button className="reset">Reset</button>
       </div>
@@ -63,17 +61,23 @@ const Editor = ({ className }: EditorProps) => {
 };
 
 const EditorButtons = ({ className }: EditorProps) => {
+  const [disable, setDisable] = React.useState(false);
   const onNewText = () => {
-    textChange("new");
+    if (disable) return;
+    changeText("new");
   };
   const onSaveText = () => {
-    // insertText;
-    textChange("push");
+    if (disable) return;
+    saveTextToDB(() => setDisable(false));
   };
   return (
     <div className={className}>
-      <button onClick={onNewText}>New text</button>
-      <button onClick={onSaveText}>Save text</button>
+      <button onClick={onNewText} disabled={disable}>
+        New text
+      </button>
+      <button onClick={onSaveText} disabled={disable}>
+        Save text
+      </button>
       <span className="text">Editor</span>
     </div>
   );

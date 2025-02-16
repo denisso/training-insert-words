@@ -61,7 +61,7 @@ type TextShortDB = Omit<TextFieldsDB, "text"> & {
   group: string;
 };
 
-export async function getAllTexts(): Promise<TextsDict> {
+export async function getDbAllTexts(): Promise<TextsDict> {
   try {
     const texts = (await queryAll(selectAllTexts)) as TextShortDB[];
     const dict: TextsDict = {};
@@ -83,7 +83,7 @@ export async function getAllTexts(): Promise<TextsDict> {
 
 const selectTextByID = "SELECT text FROM text WHERE id = $1";
 
-export async function getTextByID(id: string): Promise<TextContent> {
+export async function getDbTextByID(id: string): Promise<TextContent> {
   try {
     const result = (await queryOne(selectTextByID, [id])) as TextContent;
     return result;
@@ -95,19 +95,34 @@ export async function getTextByID(id: string): Promise<TextContent> {
 
 const updateQueryText = `
   UPDATE "text"
-  SET "text" = $2
+  SET "text" = $2,
+    "name" = $3
   WHERE "id" = $1
   RETURNING *;
 `;
 
-export async function updtaeTextById(id: string, text: string )  {
+export async function updateDBTextById(id: string, name: string, text: string) {
   try {
-    const result = (await queryOne(updateQueryText, [id, text])) as TextContent;
+    const result = (await queryOne(updateQueryText, [
+      id,
+      name,
+      text,
+    ])) as TextContent;
     return result;
   } catch (err) {
     console.error("Error updtae text by ID", err);
     throw err;
   }
+}
+
+export async function updateDBTextByIdBoolean(
+  id: string,
+  name: string,
+  text: string
+) {
+  return new Promise((resolve, reject) => {
+    updateDBTextById(id, name, text).then((_) => resolve(true), reject);
+  });
 }
 
 const queryInsert = `
@@ -116,12 +131,11 @@ VALUES ($1, $2)
 RETURNING *;
 `;
 
-export async function insertText(name: string, text: string) {
-  try{
+export async function insertDbText(name: string, text: string) {
+  try {
     const result = (await queryOne(queryInsert, [name, text])) as TextContent;
     return result;
-  }
-  catch(err){
+  } catch (err) {
     console.error("Error insert text by ID", err);
     throw err;
   }

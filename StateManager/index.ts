@@ -132,8 +132,8 @@ export type StatePublic = {
   modal: {
     title: string;
     text: string;
-    onOk: () => void;
-    onCancel?: () => void;
+    onOk: (done: () => void) => void;
+    onCancel?: (done: () => void) => void;
     btns?: { text: "string"; cb: () => void }[];
   } | null;
 };
