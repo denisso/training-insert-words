@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./Popup.module.css";
 import classNames from "classnames";
 import ReactDOM from "react-dom";
+import sm, { StatePublic } from "@/StateManager";
 
 const duration = 5000;
 const verticalGap = 16;
@@ -15,8 +16,6 @@ const moveRight = [
   },
 ];
 
-const animations = new Set<Animation>();
-
 type PopupProps = {
   className: string;
   text: string;
@@ -24,51 +23,85 @@ type PopupProps = {
 };
 
 const Popup = ({ className, text, type }: PopupProps) => {
-  const popupRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {}, []);
+  const popupRef = React.useRef<HTMLDivElement>(null),
+    lineRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (!lineRef.current || !popupRef.current) return;
+    const item = sm().state.popups.find((e) => e.popup === null);
+    if (!item) return;
+    item.popup = popupRef.current;
+    item.animation = lineRef.current.animate(
+      moveRight[0],
+      moveRight[1] as KeyframeAnimationOptions
+    );
+
+    verticalAlignPopups();
+
+  }, []);
   return (
     <div className={classNames(className, styles[type])} ref={popupRef}>
       {text}
       <div className="line-box">
-        <div className="line"></div>
+        <div className="line" ref={lineRef}></div>
       </div>
     </div>
   );
 };
 
-const PoolPopups = () => {
-  const [modals, setModals] = React.useState<HTMLDivElement[]>([]);
-  const [props, setProps] = React.useState<PopupProps[]>([]);
-  const verticalAlignPopups = () => {
-    const tY: number[] = [0];
+export type PopupItem = {
+  popup?: HTMLDivElement | null;
+  animation?: Animation | null;
+} & PopupProps;
 
+function verticalAlignPopups() {
+  const tY: number[] = [0];
+
+  requestAnimationFrame(() => {
+    const popups = sm().state.popups;
+    let popup = popups[popups.length - 2].popup;
+    if (!popup || popups[popups.length - 1].popup === null) return;
+    for (
+      let indx = popups.length - 2,
+        prevHeight = popup.getBoundingClientRect().height;
+      indx >= 0;
+      indx--
+    ) {
+      tY[indx] = -(Math.abs(tY[indx + 1]) + prevHeight + verticalGap);
+      popup = sm().state.popups[indx].popup;
+      if (!popup) continue;
+      prevHeight = popup.getBoundingClientRect().height;
+    }
+
+    // Second rAF: for paint и composite
     requestAnimationFrame(() => {
-      for (
-        let indx = modals.length - 2,
-          prevHeight = modals[indx].getBoundingClientRect().height;
-        indx >= 0;
-        indx--
-      ) {
-        tY[indx] = -(Math.abs(tY[indx + 1]) + prevHeight + verticalGap);
-        prevHeight = modals[indx].getBoundingClientRect().height;
+      for (let indx = sm().state.popups.length - 2; indx >= 0; indx--) {
+        popup = sm().state.popups[indx].popup;
+        if (!popup) continue;
+        popup.style.transform = `translate(0, ${tY[indx]}px)`;
       }
-
-      // Second rAF: for paint и composite
-      requestAnimationFrame(() => {
-        for (let indx = modals.length - 2; indx >= 0; indx--) {
-          modals[indx].style.transform = `translate(0, ${tY[indx]}px)`;
-        }
-      });
     });
-  };
+  });
+}
+
+const PoolPopups = () => {
+  const [pops, setPops] = React.useState<PopupItem[]>([]);
+
+  React.useEffect(() => {
+    const handlePopups = (pops: StatePublic["popups"]) => {
+      setPops(pops);
+    };
+    sm().attach("popups", handlePopups);
+
+    return () => sm().detach("popups", handlePopups);
+  }, []);
 
   return ReactDOM.createPortal(
     <>
-      {modals.map((_, i) => (
+      {pops.map((_, i) => (
         <Popup
-          className={props[i].className}
-          text={props[i].text}
-          type={props[i].type}
+          className={pops[i].className}
+          text={pops[i].text}
+          type={pops[i].type}
         />
       ))}
     </>,
@@ -76,4 +109,6 @@ const PoolPopups = () => {
   );
 };
 export default PoolPopups;
-export const appendPopup = () => {};
+export const appendPopup = ({ className, text, type }: PopupProps) => {
+  sm().state.popups = [...sm().state.popups, { className, text, type }];
+};
