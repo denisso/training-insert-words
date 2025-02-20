@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Init from "@/Components/Init";
-import Modal from "@/Components/Modal"
+import Modal from "@/Components/Modal";
+import PoolPopups from "@/Components/Popup";
 import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,8 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Init />
         {children}
-        <Modal/>
+        <Modal />
+        <PoolPopups />
       </body>
     </html>
   );

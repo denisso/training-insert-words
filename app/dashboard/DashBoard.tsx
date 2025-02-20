@@ -6,8 +6,10 @@ import ListTexts from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
 import smd, { changeText, saveTextToDB } from "./state";
 import TextEditor from "./Editor";
-import styles from "./DashBoard.module.css";
+import { appendPopup } from "@/Components/Popup";
 import classNames from "classnames";
+import styles from "./DashBoard.module.css";
+
 
 type Dispatch = (newState: TextInfo["id"][]) => void;
 
@@ -88,6 +90,7 @@ const DashBoard = () => {
 
   return (
     <>
+    <button onClick={() => appendPopup("hello", "info")}>Add Popup</button>
       <div className={classNames(styles.box, styles.header)}>
         <div className={styles.item}>
           <span className="text">List texts</span>
