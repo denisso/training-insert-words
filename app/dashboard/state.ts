@@ -1,3 +1,4 @@
+"use client";
 import sm, { StateManager } from "@/StateManager";
 import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
 import { updateDBTextByIdBoolean } from "@/db";
@@ -60,6 +61,7 @@ export const saveTextToDB = (done: () => void) => {
     updateDBTextByIdBoolean(smd().state.textID, getName(), getText())
       .then(() => {
         // handle new or existing text
+        done()
       })
       .catch((e) => console.log(e))
       .finally(done);
@@ -72,8 +74,9 @@ const openModal = (reason: SMDState["textChangeReason"], id: string) => {
     onOk: (done) => {
       saveTextToDB(done);
     },
-    onCancel: () => {
+    onCancel: (done) => {
       changeStateText(reason, id);
+      done()
     },
   };
 };

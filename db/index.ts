@@ -40,12 +40,35 @@ async function queryAll(query: string, params: any[] = []) {
   }
 }
 
+interface PgError {
+  name: string;
+  hint: string;
+  code: string;
+  detail: string;
+}
+
+const isPGError = (err: unknown): err is PgError => {
+  const error = err as PgError;
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    typeof error.name === "string" &&
+    (typeof error.hint === "string") &&
+    typeof error.code === "string" &&
+    typeof error.detail === "string"
+  );
+};
+
 async function queryOne(query: string, params: any[] = []) {
   try {
     const result = await client.query(query, params);
     return result.rows[0];
-  } catch (err) {
-    console.error("Error executing query", err);
+  } catch (err: unknown) {
+    const err2 = isPGError(err)
+    if (isPGError(err)) {
+      console.error("Error executing query", err.name);
+    }
+
     throw err;
   }
 }

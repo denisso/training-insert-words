@@ -84,13 +84,13 @@ const EditorButtons = ({ className }: EditorProps) => {
     </div>
   );
 };
-
+let counter = 0
 const DashBoard = () => {
   const selector = useConstructor(Selector);
 
   return (
     <>
-    <button onClick={() => appendPopup("hello", "info")}>Add Popup</button>
+    <button onClick={() => appendPopup("" + counter++, "info")}>Add Popup</button>
       <div className={classNames(styles.box, styles.header)}>
         <div className={styles.item}>
           <span className="text">List texts</span>

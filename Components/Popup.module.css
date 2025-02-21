@@ -21,6 +21,8 @@
   
   .content {
     position: relative;
+    font-size: 2rem;
+    font-weight: 900;
     flex: 1;
     padding: 1rem;
     padding: 1.5rem;

@@ -73,7 +73,7 @@ const useState = (selector: StateProps["selector"]) => {
     return () => {
       if (selector.detach) selector.detach();
     };
-  }, []);
+  }, [selector]);
   return state;
 };
 

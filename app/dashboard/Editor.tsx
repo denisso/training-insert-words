@@ -2,7 +2,7 @@ import React from "react";
 import smd, { changeText, SMDState } from "./state";
 import sm from "@/StateManager";
 import throttle from "@/utils/throttle";
-import { getDbTextByID, TextFieldsDB, updateDBTextById } from "@/db";
+import { getDbTextByID, TextFieldsDB } from "@/db";
 
 type TextFieldProps = {
   className: string;
@@ -20,7 +20,7 @@ export const TextField = ({ key, className }: TextFieldProps) => {
     };
     smd().attach("textID", getPropByKey);
     return () => smd().detach("textID", getPropByKey);
-  }, []);
+  }, [key]);
   return <div className={className}>{state}</div>;
 };
 

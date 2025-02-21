@@ -5,7 +5,7 @@ import classNames from "classnames";
 import ReactDOM from "react-dom";
 import sm, { StatePublic } from "@/StateManager";
 
-const duration = 1005000;
+const duration = 5000;
 const verticalGap = 16;
 const moveRight = [
   [{ transform: "translateX(0)" }, { transform: "translateX(100%)" }],
@@ -35,16 +35,17 @@ const Popup = ({ item }: PopupProps) => {
     lineRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     if (!lineRef.current || !popupRef.current) return;
-    let popup = popupRef.current;
+
+    const popup = popupRef.current;
     if (!item) return;
     item.popup = popup;
     let finished = false;
-    function toggleStateAnimations(newState: boolean) {
+    function toggleStateAnimations(isPlay: boolean) {
       if (finished) return;
       sm().state.popups.forEach(({ animation }) => {
-        if (!animation) return;
-        if (animation.playState == "finished") return;
-        newState ? animation.play() : animation.pause();
+        if (animation && animation.playState != "finished")
+          if (isPlay) animation.play();
+          else animation.pause();
       });
     }
 
@@ -72,7 +73,7 @@ const Popup = ({ item }: PopupProps) => {
     };
     const buttonClose = popup.querySelector("." + styles.close);
     if (buttonClose) buttonClose.addEventListener("click", clickHandler);
-    // avoid doble unmounting in dev mode 
+    // avoid doble unmounting in dev mode
     let unmounted = false;
 
     const transitionendHandler = () => finished && cleanAndAlign();
@@ -93,14 +94,12 @@ const Popup = ({ item }: PopupProps) => {
       item.popup = null;
       unmounted = true;
       sm().state.popups = sm().state.popups.filter((e) => e !== item);
-      verticalAlignPopups();
     };
 
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       if (unmounted) return;
       popup.addEventListener("transitionend", transitionendHandler);
       popup.style.transform = `translateX(0)`;
-      verticalAlignPopups();
     });
     return () => {
       unmounted = true;
@@ -123,29 +122,34 @@ function verticalAlignPopups() {
   if (sm().state.popups.length < 2) return;
   requestAnimationFrame(() => {
     const popups = sm().state.popups;
-    if (!popups[popups.length - 2] || !popups[popups.length - 1]) return;
+    popups[popups.length - 1].tY = 0;
+
     let popup = popups[popups.length - 2].popup;
-    if (!popup || popups[popups.length - 1].popup === null) return;
+    if (!popup) return;
     for (
       let indx = popups.length - 2,
         prevHeight = popup.getBoundingClientRect().height;
       indx >= 0;
       indx--
     ) {
-      popups[indx].tY = -(Math.abs(popups[indx + 1].tY) + prevHeight + verticalGap);
+      popups[indx].tY = -(
+        Math.abs(popups[indx + 1].tY) +
+        prevHeight +
+        verticalGap
+      );
       popup = sm().state.popups[indx].popup;
       if (!popup) continue;
       prevHeight = popup.getBoundingClientRect().height;
     }
 
-    // Second rAF: for paint и composite
-    requestAnimationFrame(() => {
-      for (let indx = sm().state.popups.length - 2; indx >= 0; indx--) {
-        popup = sm().state.popups[indx].popup;
-        if (!popup) continue;
-        popup.style.transform = `translate(0, ${popups[indx].tY}px)`;
-      }
-    });
+    // for paint и composite
+    for (let indx = sm().state.popups.length - 1; indx >= 0; indx--) {
+      popup = sm().state.popups[indx].popup;
+      const animation = sm().state.popups[indx].animation;
+      // easy crunch workaround =)
+      if (!popup || (animation && animation.playState == "finished")) continue;
+      popup.style.transform = `translate(0, ${popups[indx].tY}px)`;
+    }
   });
 }
 
@@ -157,6 +161,9 @@ const PoolPopups = () => {
     setMount(true);
     const handlePopups = (pops: StatePublic["popups"]) => {
       setPops(pops);
+      requestAnimationFrame(() => {
+        verticalAlignPopups();
+      });
     };
     sm().attach("popups", handlePopups);
     return () => sm().detach("popups", handlePopups);

@@ -4,8 +4,6 @@ import ReactDOM from "react-dom";
 import styles from "./Modal.module.css";
 import sm, { StatePublic } from "@/StateManager";
 
-
-
 const Modal = () => {
   const [display, setDisplay] = React.useState<"none" | "flex">("none");
   const modalRef = React.useRef<StatePublic["modal"]>(null);
