@@ -71,6 +71,8 @@ const TextEditor = ({ className }: Props) => {
   }, []);
 
   const handleInput = () => {
+    if (contentRef.current?.innerHTML) smd().state.isTextEmpty = true;
+    else smd().state.isTextEmpty = false;
     textChangeThrottle();
   };
 

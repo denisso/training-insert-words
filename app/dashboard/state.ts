@@ -5,6 +5,7 @@ import { updateDBTextByIdBoolean } from "@/db";
 
 export type SMDState = {
   textID: string;
+  isTextEmpty: boolean;
   /**
    * push - load text from public state texts
    * new - new text textID=-1 clear text in textEditor
@@ -33,6 +34,7 @@ class SMDashboard extends StateManager<SMDState> {
 
 const smd = clientSingletonBuilder(SMDashboard, {
   textID: "",
+  isTextEmpty: true,
   textChangeReason: "new",
   textUpdateTick: false,
   textChanged: false,

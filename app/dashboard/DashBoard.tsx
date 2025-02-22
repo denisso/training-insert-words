@@ -10,7 +10,6 @@ import { appendPopup } from "@/Components/Popup";
 import classNames from "classnames";
 import styles from "./DashBoard.module.css";
 
-
 type Dispatch = (newState: TextInfo["id"][]) => void;
 
 class Selector {
@@ -35,34 +34,37 @@ const pushToTextEditorCallBack = {
   name: "Push to editor",
 };
 
-type EditorProps = {
-  className: string;
-};
-
-const Editor = ({ className }: EditorProps) => {
+const TextName = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     smd().state.getName = () =>
       inputRef.current ? inputRef.current.value : "";
-    
   }, []);
+
+  return (
+    <div className={styles.name}>
+      <input
+        ref={inputRef}
+        type="text"
+        className={styles.input}
+        onChange={() => changeText("input")}
+      />
+      <button className="reset">Reset</button>
+    </div>
+  );
+};
+
+const EditorContainer = ({ className }: { className: string }) => {
   return (
     <div className={className}>
-      <div className={styles.name}>
-        <input
-          type="text"
-          className={styles.input}
-          onChange={() => changeText("input")}
-        />
-        <button className="reset">Reset</button>
-      </div>
+      <TextName />
       <TextEditor className={styles.editorElement} />
     </div>
   );
 };
 
-const EditorButtons = ({ className }: EditorProps) => {
+const EditorButtons = ({ className }: { className: string }) => {
   const [disable, setDisable] = React.useState(false);
   const onNewText = () => {
     if (disable) return;
@@ -84,13 +86,16 @@ const EditorButtons = ({ className }: EditorProps) => {
     </div>
   );
 };
-let counter = 0
+let counter = 0;
+
 const DashBoard = () => {
   const selector = useConstructor(Selector);
 
   return (
     <>
-    <button onClick={() => appendPopup("" + counter++, "info")}>Add Popup</button>
+      <button onClick={() => appendPopup("" + counter++, "info")}>
+        Add Popup
+      </button>
       <div className={classNames(styles.box, styles.header)}>
         <div className={styles.item}>
           <span className="text">List texts</span>
@@ -103,7 +108,7 @@ const DashBoard = () => {
           action={pushToTextEditorCallBack}
           className={styles.item}
         />
-        <Editor className={classNames(styles.item, styles.editor)} />
+        <EditorContainer className={styles.item} />
       </div>
     </>
   );
