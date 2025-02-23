@@ -8,7 +8,7 @@ import smd, { changeText, saveTextToDB } from "./state";
 import TextEditor from "./Editor";
 import { appendPopup } from "@/Components/Popup";
 import classNames from "classnames";
-import styles from "./DashBoard.module.css";
+import styles from "./DashBoard.module.scss";
 
 type Dispatch = (newState: TextInfo["id"][]) => void;
 
@@ -59,7 +59,7 @@ const EditorContainer = ({ className }: { className: string }) => {
   return (
     <div className={className}>
       <TextName />
-      <TextEditor className={styles.editorElement} />
+      <TextEditor className={styles.editor} />
     </div>
   );
 };
@@ -92,25 +92,21 @@ const DashBoard = () => {
   const selector = useConstructor(Selector);
 
   return (
-    <>
-      <button onClick={() => appendPopup("" + counter++, "info")}>
-        Add Popup
-      </button>
-      <div className={classNames(styles.box, styles.header)}>
-        <div className={styles.item}>
-          <span className="text">List texts</span>
-        </div>
+    <div className={styles.box}>
+      <div className={classNames(styles.item, styles.header)}>
+        <span className="text">List texts</span>
+      </div>
+      <div className={classNames(styles.item, styles.header)}>
         <EditorButtons className={classNames(styles.item, styles.editor)} />
       </div>
-      <div className={classNames(styles.box, styles.content)}>
-        <ListTexts
-          selector={selector}
-          action={pushToTextEditorCallBack}
-          className={styles.item}
-        />
-        <EditorContainer className={styles.item} />
-      </div>
-    </>
+
+      <ListTexts
+        selector={selector}
+        action={pushToTextEditorCallBack}
+        className={classNames(styles.item, styles.content)}
+      />
+      <EditorContainer className={classNames(styles.item, styles.content)} />
+    </div>
   );
 };
 
