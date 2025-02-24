@@ -6,7 +6,6 @@ import ListTexts from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
 import smd, { changeText, saveTextToDB } from "./state";
 import TextEditor from "./Editor";
-import { appendPopup } from "@/Components/Popup";
 import classNames from "classnames";
 import styles from "./DashBoard.module.scss";
 
@@ -86,7 +85,6 @@ const EditorButtons = ({ className }: { className: string }) => {
     </div>
   );
 };
-let counter = 0;
 
 const DashBoard = () => {
   const selector = useConstructor(Selector);

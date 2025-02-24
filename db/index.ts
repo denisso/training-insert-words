@@ -64,7 +64,7 @@ async function queryOne(query: string, params: any[] = []) {
     const result = await client.query(query, params);
     return result.rows[0];
   } catch (err: unknown) {
-    const err2 = isPGError(err)
+    // const err2 = isPGError(err)
     if (isPGError(err)) {
       console.error("Error executing query", err.name);
     }

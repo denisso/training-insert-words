@@ -1,7 +1,7 @@
 "use client";
 import sm, { StateManager } from "@/StateManager";
 import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
-import { updateDBTextByIdBoolean } from "@/db";
+import { updateDBTextByIdBoolean, insertDbText } from "@/db";
 
 export type SMDState = {
   textID: string;
@@ -56,19 +56,33 @@ const changeStateText = (reason: SMDState["textChangeReason"], id: string) => {
   smd().state.textUpdateTick = !smd().state.textUpdateTick;
 };
 
-export const saveTextToDB = (done: () => void) => {
+export const saveTextToDB = (  done: () => void) => {
   const getText = smd().state.getText,
     getName = smd().state.getName;
-  if (getText && getName)
+  if (getText && getName){
     updateDBTextByIdBoolean(smd().state.textID, getName(), getText())
       .then(() => {
         // handle new or existing text
-        done()
+        done();
       })
       .catch((e) => console.log(e))
       .finally(done);
+  }
 };
 
+export const addTextToDB = (  done: () => void) => {
+  const getText = smd().state.getText,
+    getName = smd().state.getName;
+  if (getText && getName){
+    insertDbText(getName(), getText())
+      .then(() => {
+        // handle new or existing text
+        done();
+      })
+      .catch((e) => console.log(e))
+      .finally(done);
+  }
+};
 const openModal = (reason: SMDState["textChangeReason"], id: string) => {
   sm().state.modal = {
     title: "Attention",
@@ -78,7 +92,7 @@ const openModal = (reason: SMDState["textChangeReason"], id: string) => {
     },
     onCancel: (done) => {
       changeStateText(reason, id);
-      done()
+      done();
     },
   };
 };
