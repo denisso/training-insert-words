@@ -13,7 +13,7 @@ const ErrorMessage = () => {
     };
   }, []);
   return (
-    <div className={styles.errorBox}>{message ? message : "No Errors"}</div>
+    <div className={styles["error-box"]}>{message ? message : "No Errors"}</div>
   );
 };
 

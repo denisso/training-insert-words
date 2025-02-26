@@ -1,0 +1,20 @@
+.table {
+  width: 100%;
+  .cell {
+    padding: 8px;
+    white-space: nowrap;
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    &.name {
+      white-space: initial;
+      border-left: none;
+    }
+  }
+  .first-row .cell {
+    border-top: none;
+  }
+}
+
+.link {
+  font-weight: 900;
+}

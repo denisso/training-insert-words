@@ -118,8 +118,8 @@ export async function getDbTextByID(id: string): Promise<TextContent> {
 
 const updateQueryText = `
   UPDATE "text"
-  SET "text" = $2,
-    "name" = $3
+  SET "name" = $2,
+    "text" = $3
   WHERE "id" = $1
   RETURNING *;
 `;

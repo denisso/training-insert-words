@@ -2,7 +2,7 @@
 import sm, { StateManager } from "@/StateManager";
 import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
 import { updateDBTextByIdBoolean, insertDbText } from "@/db";
-
+import { appendPopup } from "@/Components/Popup";
 export type SMDState = {
   textID: string;
   isTextEmpty: boolean;
@@ -46,34 +46,42 @@ const smd = clientSingletonBuilder(SMDashboard, {
 export default smd;
 
 const changeStateText = (reason: SMDState["textChangeReason"], id: string) => {
-  smd().state.textChangeReason = reason;
   // for reason "input" textID = no change
   if (reason == "new") smd().state.textID = "";
   else if (reason == "push" || reason == "save") smd().state.textID = id;
   if (smd().state.textID === "" || reason == "input")
     smd().state.textChanged = true;
   else smd().state.textChanged = false;
+  smd().state.textChangeReason = reason;
   smd().state.textUpdateTick = !smd().state.textUpdateTick;
 };
 
-export const saveTextToDB = (  done: () => void) => {
+export const saveTextToDB = (done: () => void) => {
   const getText = smd().state.getText,
     getName = smd().state.getName;
-  if (getText && getName){
+  if (getText && getName) {
+    if(!getName()){
+      appendPopup("Text name is empty", "error")
+      return
+    }
     updateDBTextByIdBoolean(smd().state.textID, getName(), getText())
       .then(() => {
-        // handle new or existing text
+        appendPopup("Saved succesful", "info")
+        sm().state.texts[smd().state.textID].name = getName()
         done();
       })
       .catch((e) => console.log(e))
       .finally(done);
   }
+  else{
+    appendPopup("Internal Error getText or getName not be setted", "error")
+  }
 };
 
-export const addTextToDB = (  done: () => void) => {
+export const addTextToDB = (done: () => void) => {
   const getText = smd().state.getText,
     getName = smd().state.getName;
-  if (getText && getName){
+  if (getText && getName) {
     insertDbText(getName(), getText())
       .then(() => {
         // handle new or existing text
@@ -83,6 +91,7 @@ export const addTextToDB = (  done: () => void) => {
       .finally(done);
   }
 };
+
 const openModal = (reason: SMDState["textChangeReason"], id: string) => {
   sm().state.modal = {
     title: "Attention",

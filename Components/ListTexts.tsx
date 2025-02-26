@@ -4,7 +4,8 @@ import Link from "next/link";
 import { TextInfo } from "@/db";
 import sm from "@/StateManager";
 import type { TextsDict } from "@/db";
-import styles from "./ListTexts.module.css";
+import classNames from "classnames";
+import styles from "./ListTexts.module.scss";
 
 type ListProps = {
   texts: TextInfo["id"][];
@@ -32,31 +33,35 @@ export const ListTexts = ({ texts, action, link, className }: ListProps) => {
   }
 
   return (
-    <div className={className}>
-      {texts.map((id) => {
-        const text = d[id];
-        if (!text) return null;
-        return (
-          <div className={styles.items} key={id}>
-            {text.name} {" / "} Number Words: {text.length}
-            {link && (
-              <>
-                {" / "}
-                <Link href={link.href + id} className={styles.link}>
-                  {link.name}
-                </Link>
-              </>
-            )}
-            {action && (
-              <>
-                {" / "}
-                <button onClick={() => action.cb(id)}>{action.name}</button>
-              </>
-            )}
-          </div>
-        );
-      })}
-    </div>
+    <table className={classNames(className, styles.table)}>
+      <tbody>
+        {texts.map((id, i) => {
+          const text = d[id];
+          if (!text) return null;
+          return (
+            <tr key={id} className={i ? "" :styles["first-row"]}>
+              <td className={classNames(styles.cell, styles.name)}>
+                {text.name}
+              </td>
+              <td className={styles.cell}>Number Words: {text.length}</td>
+
+              {link && (
+                <td className={styles.cell}>
+                  <Link href={link.href + id} className={styles.link}>
+                    {link.name}
+                  </Link>
+                </td>
+              )}
+              {action && (
+                <td className={styles.cell}>
+                  <button onClick={() => action.cb(id)}>{action.name}</button>
+                </td>
+              )}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 };
 

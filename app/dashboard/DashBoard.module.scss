@@ -1,32 +1,52 @@
-.box {
+.grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
   gap: 1rem;
-  .header {
-    &.item {
-      background-color: aquamarine;
-    }
-    &.item-editor {
-      display: flex;
-      justify-content: space-between;
-    }
-  }
-  .content {
-    &.item {
-      display: flex;
-      .editor {
-        flex-direction: column;
-        min-height: 200px;
-        border: 1px solid gray;
-        .name {
-          display: flex;
-          .input {
-            flex: 1;
-          }
-        }
-      }
-    }
 
+  .row-header {
+    grid-row: 1;
+  }
+  .row-content {
+    grid-row: 2;
+  }
+
+  .col-texts {
+    grid-column: 1;
+  }
+  .col-editor {
+    grid-column: 2;
+  }
+}
+
+.editor-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.editor-container {
+  display: flex;
+  flex-direction: column;
+
+}
+
+.editor-name {
+  display: flex;
+  .input-name {
+    flex: 1;
+  }
+  .button-name {
+    flex: 0;
+  }
+}
+.editor {
+  flex-direction: column;
+  min-height: 200px;
+  border: 1px solid gray;
+  .name {
+    display: flex;
+    .input {
+      flex: 1;
+    }
   }
 }

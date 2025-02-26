@@ -4,10 +4,72 @@ import sm, { StatePublic } from "@/StateManager";
 import { TextInfo } from "@/db";
 import ListTexts from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
-import smd, { changeText, saveTextToDB } from "./state";
+import smd, { SMDState, changeText, saveTextToDB } from "./state";
 import TextEditor from "./Editor";
 import classNames from "classnames";
 import styles from "./DashBoard.module.scss";
+
+const TextName = ({ className }: { className?: string }) => {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    smd().state.getName = () =>
+      inputRef.current ? inputRef.current.value : "";
+    const handleTExtChangeReason = (reason: SMDState["textChangeReason"]) => {
+      if (!inputRef.current) return;
+      if (reason == "push")
+        inputRef.current.value =
+          sm().state.texts[smd().state.textID]?.name ?? "";
+      else if (reason == "new") inputRef.current.value = "";
+    };
+    smd().attach("textChangeReason", handleTExtChangeReason);
+    return () => smd().detach("textChangeReason", handleTExtChangeReason);
+  }, []);
+
+  return (
+    <div className={classNames(className, styles["editor-name"])}>
+      <input
+        ref={inputRef}
+        type="text"
+        className={styles["input-name"]}
+        onChange={() => changeText("input")}
+      />
+      <button className={styles["button-name"]}>Reset</button>
+    </div>
+  );
+};
+
+const EditorContainer = ({ className }: { className?: string }) => {
+  return (
+    <div className={classNames(className, styles["editor-container"])}>
+      <TextName />
+      <TextEditor />
+    </div>
+  );
+};
+
+const EditorButtons = ({ className }: { className?: string }) => {
+  const [disable, setDisable] = React.useState(false);
+  const onNewText = () => {
+    if (disable) return;
+    changeText("new");
+  };
+  const onSaveText = () => {
+    if (disable) return;
+    saveTextToDB(() => setDisable(false));
+  };
+  return (
+    <div className={classNames(className, styles["editor-buttons"])}>
+      <button onClick={onNewText} disabled={disable}>
+        New text
+      </button>
+      <button onClick={onSaveText} disabled={disable}>
+        Save text
+      </button>
+      <span className="text">Editor</span>
+    </div>
+  );
+};
 
 type Dispatch = (newState: TextInfo["id"][]) => void;
 
@@ -33,77 +95,23 @@ const pushToTextEditorCallBack = {
   name: "Push to editor",
 };
 
-const TextName = () => {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    smd().state.getName = () =>
-      inputRef.current ? inputRef.current.value : "";
-  }, []);
-
-  return (
-    <div className={styles.name}>
-      <input
-        ref={inputRef}
-        type="text"
-        className={styles.input}
-        onChange={() => changeText("input")}
-      />
-      <button className="reset">Reset</button>
-    </div>
-  );
-};
-
-const EditorContainer = ({ className }: { className: string }) => {
-  return (
-    <div className={className}>
-      <TextName />
-      <TextEditor className={styles.editor} />
-    </div>
-  );
-};
-
-const EditorButtons = ({ className }: { className: string }) => {
-  const [disable, setDisable] = React.useState(false);
-  const onNewText = () => {
-    if (disable) return;
-    changeText("new");
-  };
-  const onSaveText = () => {
-    if (disable) return;
-    saveTextToDB(() => setDisable(false));
-  };
-  return (
-    <div className={className}>
-      <button onClick={onNewText} disabled={disable}>
-        New text
-      </button>
-      <button onClick={onSaveText} disabled={disable}>
-        Save text
-      </button>
-      <span className="text">Editor</span>
-    </div>
-  );
-};
-
 const DashBoard = () => {
   const selector = useConstructor(Selector);
 
   return (
-    <div className={styles.box}>
-      <div className={classNames(styles.item, styles.header)}>
+    <div className={styles.grid}>
+      <div className={classNames(styles["row-header"], styles["col-texts"])}>
         <span className="text">List texts</span>
       </div>
-      <div className={classNames(styles.item, styles.header)}>
-        <EditorButtons className={classNames(styles.item, styles.editor)} />
-      </div>
-
-      <ListTexts
-        selector={selector}
-        action={pushToTextEditorCallBack}
-        className={classNames(styles.item, styles.content)}
+      <EditorButtons
+        className={classNames(styles["row-header"], styles["col-editor"])}
       />
-      <EditorContainer className={classNames(styles.item, styles.content)} />
+      <div className={classNames(styles["row-content"], styles["col-texts"])}>
+        <ListTexts selector={selector} action={pushToTextEditorCallBack} />
+      </div>
+      <EditorContainer
+        className={classNames(styles["row-content"], styles["col-editor"])}
+      />
     </div>
   );
 };

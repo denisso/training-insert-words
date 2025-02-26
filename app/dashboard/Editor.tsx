@@ -3,6 +3,8 @@ import smd, { changeText, SMDState } from "./state";
 import sm from "@/StateManager";
 import throttle from "@/utils/throttle";
 import { getDbTextByID, TextFieldsDB } from "@/db";
+import classNames from "classnames";
+import styles from "./Editor.module.scss";
 
 type TextFieldProps = {
   className: string;
@@ -82,7 +84,7 @@ const TextEditor = ({ className }: Props) => {
         ref={contentRef}
         contentEditable={true}
         onInput={handleInput}
-        className={className}
+        className={classNames(className, styles.editor)}
       />
     </>
   );
