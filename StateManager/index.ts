@@ -1,7 +1,7 @@
 "use client";
 import { TextInfo, TextsDict } from "@/db";
 import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
-import type {PopupItem} from "@/Components/Popup"
+import type { PopupItem } from "@/Components/Popup/Popup";
 type ObserverCallback<T, K extends keyof T> = (arg: T[K]) => void;
 
 export abstract class StateManager<T extends object> {
@@ -137,7 +137,7 @@ export type StatePublic = {
     onCancel?: (done: () => void) => void;
     btns?: { text: "string"; cb: () => void }[];
   } | null;
-  popups: PopupItem[]
+  popups: PopupItem[];
 };
 
 class StateManagerPublic extends StateManager<StatePublic> {
@@ -154,5 +154,5 @@ export default clientSingletonBuilder(StateManagerPublic, {
   textsSelected: [],
   error: "",
   modal: null,
-  popups: []
+  popups: [],
 });

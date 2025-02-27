@@ -1,12 +1,11 @@
 "use client";
 import React from "react";
-import styles from "./Popup.module.css";
 import classNames from "classnames";
-import ReactDOM from "react-dom";
-import sm, { StatePublic } from "@/StateManager";
+import sm from "@/StateManager";
+import styles from "./Popup.module.scss";
 
 const duration = 5000;
-const verticalGap = 16;
+
 const moveRight = [
   [{ transform: "translateX(0)" }, { transform: "translateX(100%)" }],
   {
@@ -32,7 +31,8 @@ type PopupProps = {
 
 const Popup = ({ item }: PopupProps) => {
   const popupRef = React.useRef<HTMLDivElement>(null),
-    lineRef = React.useRef<HTMLDivElement>(null);
+    lineRef = React.useRef<HTMLDivElement>(null),
+    btnCloseRef = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
     if (!lineRef.current || !popupRef.current) return;
 
@@ -66,13 +66,14 @@ const Popup = ({ item }: PopupProps) => {
       popup.style.transform = `translate(100%, ${item.tY}px)`;
     };
     item.animation.addEventListener("finish", animationLineEndHandler);
-    const clickHandler = () => {
+    const handlerClose = () => {
       toggleStateAnimations(true);
       finished = true;
       animationLineEndHandler();
     };
-    const buttonClose = popup.querySelector("." + styles.close);
-    if (buttonClose) buttonClose.addEventListener("click", clickHandler);
+
+    if (btnCloseRef.current)
+      btnCloseRef.current.addEventListener("click", handlerClose);
     // avoid doble unmounting in dev mode
     let unmounted = false;
 
@@ -82,7 +83,8 @@ const Popup = ({ item }: PopupProps) => {
       popup.removeEventListener("mouseleave", mouseleaveListener);
       popup.removeEventListener("transitionend", transitionendHandler);
 
-      if (buttonClose) buttonClose.removeEventListener("click", clickHandler);
+      if (btnCloseRef.current)
+        btnCloseRef.current.removeEventListener("click", handlerClose);
 
       if (unmounted) return;
       if (item.animation) {
@@ -96,7 +98,7 @@ const Popup = ({ item }: PopupProps) => {
       sm().state.popups = sm().state.popups.filter((e) => e !== item);
     };
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       if (unmounted) return;
       popup.addEventListener("transitionend", transitionendHandler);
       popup.style.transform = `translateX(0)`;
@@ -108,81 +110,17 @@ const Popup = ({ item }: PopupProps) => {
   }, [item]);
   return (
     <div className={classNames(styles.popup, styles[item.type])} ref={popupRef}>
-      <div className={styles.content}>{item.text}</div>
-
-      <div className={styles["line-box"]}>
-        <div className={styles["line"]} ref={lineRef}></div>
+      <div className={styles.box}>
+        <button className={styles.close} ref={btnCloseRef}>
+          Close
+        </button>
+        <div className={styles.content}>{item.text}</div>
+        <div className={styles["line-box"]}>
+          <div className={styles["line"]} ref={lineRef}></div>
+        </div>
       </div>
-      <button className={styles.close}>Close</button>
     </div>
   );
 };
 
-function verticalAlignPopups() {
-  if (sm().state.popups.length < 2) return;
-  requestAnimationFrame(() => {
-    const popups = sm().state.popups;
-    popups[popups.length - 1].tY = 0;
-
-    let popup = popups[popups.length - 2].popup;
-    if (!popup) return;
-    for (
-      let indx = popups.length - 2,
-        prevHeight = popup.getBoundingClientRect().height;
-      indx >= 0;
-      indx--
-    ) {
-      popups[indx].tY = -(
-        Math.abs(popups[indx + 1].tY) +
-        prevHeight +
-        verticalGap
-      );
-      popup = sm().state.popups[indx].popup;
-      if (!popup) continue;
-      prevHeight = popup.getBoundingClientRect().height;
-    }
-
-    // for paint и composite
-    for (let indx = sm().state.popups.length - 1; indx >= 0; indx--) {
-      popup = sm().state.popups[indx].popup;
-      const animation = sm().state.popups[indx].animation;
-      // easy crunch workaround =)
-      if (!popup || (animation && animation.playState == "finished")) continue;
-      popup.style.transform = `translate(0, ${popups[indx].tY}px)`;
-    }
-  });
-}
-
-const PoolPopups = () => {
-  const [pops, setPops] = React.useState<PopupItem[]>([]);
-  const [mount, setMount] = React.useState(false);
-
-  React.useEffect(() => {
-    setMount(true);
-    const handlePopups = (pops: StatePublic["popups"]) => {
-      setPops(pops);
-      requestAnimationFrame(() => {
-        verticalAlignPopups();
-      });
-    };
-    sm().attach("popups", handlePopups);
-    return () => sm().detach("popups", handlePopups);
-  }, []);
-  if (!mount) return null;
-  else
-    return ReactDOM.createPortal(
-      <>
-        {pops.map((item, i) => (
-          <Popup item={item} key={pops[i].id} />
-        ))}
-      </>,
-      document.body
-    );
-};
-export default PoolPopups;
-export const appendPopup = (text: string, type: PopupItem["type"]) => {
-  sm().state.popups = [
-    ...sm().state.popups,
-    { text, type, tY: 0, id: performance.now() + "" },
-  ];
-};
+export default Popup;

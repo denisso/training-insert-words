@@ -53,7 +53,7 @@ const isPGError = (err: unknown): err is PgError => {
     typeof err === "object" &&
     err !== null &&
     typeof error.name === "string" &&
-    (typeof error.hint === "string") &&
+    typeof error.hint === "string" &&
     typeof error.code === "string" &&
     typeof error.detail === "string"
   );
@@ -156,8 +156,11 @@ RETURNING *;
 
 export async function insertDbText(name: string, text: string) {
   try {
-    const result = (await queryOne(queryInsert, [name, text])) as TextContent;
-    return result;
+    const result = (await queryOne(queryInsert, [name, text])) as Pick<
+      TextsDict,
+      "id"
+    >;
+    return result.id;
   } catch (err) {
     console.error("Error insert text by ID", err);
     throw err;

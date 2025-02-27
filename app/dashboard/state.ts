@@ -2,7 +2,8 @@
 import sm, { StateManager } from "@/StateManager";
 import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
 import { updateDBTextByIdBoolean, insertDbText } from "@/db";
-import { appendPopup } from "@/Components/Popup";
+import { showPopup } from "@/Components/Popup/";
+
 export type SMDState = {
   textID: string;
   isTextEmpty: boolean;
@@ -60,35 +61,39 @@ export const saveTextToDB = (done: () => void) => {
   const getText = smd().state.getText,
     getName = smd().state.getName;
   if (getText && getName) {
-    if(!getName()){
-      appendPopup("Text name is empty", "error")
-      return
+    if (!getName()) {
+      showPopup("Text name is empty", "error");
+      return;
     }
-    updateDBTextByIdBoolean(smd().state.textID, getName(), getText())
-      .then(() => {
-        appendPopup("Saved succesful", "info")
-        sm().state.texts[smd().state.textID].name = getName()
-        done();
-      })
-      .catch((e) => console.log(e))
-      .finally(done);
-  }
-  else{
-    appendPopup("Internal Error getText or getName not be setted", "error")
-  }
-};
+    if (smd().state.textID == "") {
+      insertDbText(getName(), getText())
+        .then((_) => {
 
-export const addTextToDB = (done: () => void) => {
-  const getText = smd().state.getText,
-    getName = smd().state.getName;
-  if (getText && getName) {
-    insertDbText(getName(), getText())
-      .then(() => {
-        // handle new or existing text
-        done();
-      })
-      .catch((e) => console.log(e))
-      .finally(done);
+          showPopup("New text saved succesful", "info");
+        })
+        .catch((_) =>
+          showPopup(
+            "Server error during function execution insertDbText",
+            "error"
+          )
+        )
+        .finally(done);
+    } else {
+      updateDBTextByIdBoolean(smd().state.textID, getName(), getText())
+        .then(() => {
+          showPopup("Saved succesful", "info");
+          sm().state.texts[smd().state.textID].name = getName();
+        })
+        .catch((_) =>
+          showPopup(
+            "Server error during function execution updateDBTextByIdBoolean",
+            "error"
+          )
+        )
+        .finally(done);
+    }
+  } else {
+    showPopup("Client Error getText or getName not be setted", "error");
   }
 };
 
