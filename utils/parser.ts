@@ -4,7 +4,12 @@ import type { ContestData } from "./contest";
 export function isLatinLetter(char: string) {
   return /^[a-zA-Z]$/.test(char);
 }
-
+const a = "a".charCodeAt(0),
+  A = "A".charCodeAt(0),
+  z = "0".charCodeAt(0),
+  u = "'".charCodeAt(0),
+  ns = "\n".charCodeAt(0);
+  
 class Parser {
   private _pushWord(data: ContestData, w: string) {
     if (!w) return;
@@ -15,15 +20,14 @@ class Parser {
   parse(data: ContestData) {
     const text = data.text;
     data.paragraphs.push(0);
-    const n = text.length,
-      a = "a".charCodeAt(0),
-      A = "A".charCodeAt(0),
-      z = "0".charCodeAt(0),
-      u = "'".charCodeAt(0),
-      ns = "\n".charCodeAt(0);
-    let w = "";
-    for (let i = 0, p = false; i < n; i++) {
-      const c = text.charCodeAt(i);
+
+    let w = "",
+      p = false,
+      prevCh = "",
+      i = 0;
+
+    for (const ch of text) {
+      const c = ch.charCodeAt(0);
       if (
         (c >= a && c < a + 26) ||
         (c >= A && c < A + 26) ||
@@ -34,8 +38,7 @@ class Parser {
           data.paragraphs.push(data.textChunks.length);
           p = false;
         }
-        if (c == u && !w) this._pushWord(data, text[i]);
-        else w += text[i];
+        if (c != u || w) w += ch;
       } else if (c == ns) {
         p = true;
         this._pushWord(data, w);
@@ -43,8 +46,10 @@ class Parser {
       } else {
         this._pushWord(data, w);
         w = "";
-        if (i && text[i - 1] != text[i]) this._pushWord(data, text[i]);
+        if (i && prevCh != ch) this._pushWord(data, ch);
       }
+      prevCh = ch;
+      i++;
     }
     this._pushWord(data, w);
   }
