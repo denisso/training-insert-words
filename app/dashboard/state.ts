@@ -65,13 +65,15 @@ export const saveTextToDB = (done: () => void) => {
       showPopup("Text name is empty", "error");
       return;
     }
+    const name = getName(), text = getText()//, length = text.split(" ")
     if (smd().state.textID == "") {
-      insertDbText(getName(), getText())
-        .then((_) => {
+      
+      insertDbText(name, text)
+        .then(() => {
 
           showPopup("New text saved succesful", "info");
         })
-        .catch((_) =>
+        .catch(() =>
           showPopup(
             "Server error during function execution insertDbText",
             "error"
@@ -84,7 +86,7 @@ export const saveTextToDB = (done: () => void) => {
           showPopup("Saved succesful", "info");
           sm().state.texts[smd().state.textID].name = getName();
         })
-        .catch((_) =>
+        .catch(() =>
           showPopup(
             "Server error during function execution updateDBTextByIdBoolean",
             "error"
