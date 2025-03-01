@@ -7,14 +7,17 @@ import type { TextsDict } from "@/db";
 import classNames from "classnames";
 import styles from "./ListTexts.module.scss";
 
+export type Action =
+  | { type: "callback"; cb: (id: string) => void; name: string }
+  | { type: "link"; name: string; href: string; slug: keyof TextInfo };
+
 type ListProps = {
   texts: TextInfo["id"][];
-  action?: { cb: (id: string) => void; name: string };
-  link?: { name: string; href: string; slug: keyof TextInfo };
+  actions: Action[];
   className?: string;
 };
 
-export const ListTexts = ({ texts, action, link, className }: ListProps) => {
+export const ListTexts = ({ texts, actions = [], className }: ListProps) => {
   const [d, setDict] = React.useState<TextsDict>({});
   React.useEffect(() => {
     const handler = (dict: TextsDict) => {
@@ -39,24 +42,22 @@ export const ListTexts = ({ texts, action, link, className }: ListProps) => {
           const text = d[id];
           if (!text) return null;
           return (
-            <tr key={id} className={i ? "" :styles["first-row"]}>
+            <tr key={id} className={i ? "" : styles["first-row"]}>
               <td className={classNames(styles.cell, styles.name)}>
                 {text.name}
               </td>
               <td className={styles.cell}>Number Words: {text.length}</td>
-
-              {link && (
-                <td className={styles.cell}>
-                  <Link href={link.href + id} className={styles.link}>
-                    {link.name}
-                  </Link>
+              {actions.map((action, indx) => (
+                <td className={styles.cell} key={indx}>
+                  {action.type === "link" ? (
+                    <Link href={action.href + id} className={styles.link}>
+                      {action.name}
+                    </Link>
+                  ) : (
+                    <button onClick={() => action.cb(id)}>{action.name}</button>
+                  )}
                 </td>
-              )}
-              {action && (
-                <td className={styles.cell}>
-                  <button onClick={() => action.cb(id)}>{action.name}</button>
-                </td>
-              )}
+              ))}
             </tr>
           );
         })}

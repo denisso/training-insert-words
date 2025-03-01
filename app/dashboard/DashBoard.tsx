@@ -2,7 +2,7 @@
 import React from "react";
 import sm, { StatePublic } from "@/StateManager";
 import { TextInfo } from "@/db";
-import ListTexts from "@/Components/ListTexts";
+import ListTexts, { Action } from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
 import smd, { SMDState, changeText, saveTextToDB } from "./state";
 import TextEditor from "./Editor";
@@ -88,7 +88,8 @@ class Selector {
   }
 }
 
-const pushToTextEditorCallBack = {
+const pushToTextEditorCallBack: Action = {
+  type: "callback",
   cb: (id: string) => {
     changeText("push", id);
   },
@@ -97,7 +98,10 @@ const pushToTextEditorCallBack = {
 
 const DashBoard = () => {
   const selector = useConstructor(Selector);
-
+  const [actions, setActions] = React.useState<Action[]>([]);
+  React.useEffect(() => {
+    setActions([pushToTextEditorCallBack]);
+  }, []);
   return (
     <div className={styles.grid}>
       <div className={classNames(styles["row-header"], styles["col-texts"])}>
@@ -107,7 +111,7 @@ const DashBoard = () => {
         className={classNames(styles["row-header"], styles["col-editor"])}
       />
       <div className={classNames(styles["row-content"], styles["col-texts"])}>
-        <ListTexts selector={selector} action={pushToTextEditorCallBack} />
+        <ListTexts selector={selector} actions={actions} />
       </div>
       <EditorContainer
         className={classNames(styles["row-content"], styles["col-editor"])}

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import ListTexts from "@/Components/ListTexts";
+import ListTexts, { Action } from "@/Components/ListTexts";
 import sm, { StatePublic } from "@/StateManager";
 import styles from "./HomePage.module.css";
 
@@ -30,8 +30,13 @@ const removeFromSelectedCb = (id: string) => {
   );
 };
 
-const addToSelected = { cb: addToSelectedCb, name: "Move to selected" };
-const removeFromSelected = {
+const addToSelected: Action = {
+  type: "callback",
+  cb: addToSelectedCb,
+  name: "Move to selected",
+};
+const removeFromSelected: Action = {
+  type: "callback",
   cb: removeFromSelectedCb,
   name: "Remove from selected",
 };
@@ -86,6 +91,18 @@ const selectorTextsAvailable = new SelectorTextsAvailable(),
   selectorTextsSelected = new SelectorTextsSelected();
 
 const HomePage = () => {
+  const [remove, setRemove] = React.useState<Action[]>([]);
+  const [add, setAdd] = React.useState<Action[]>([]);
+  React.useEffect(() => {
+    setRemove([
+      { type: "link", href: "/contest/", name: "Start contest", slug: "id" },
+      removeFromSelected,
+    ]);
+    setAdd([
+      { type: "link", href: "/contest/", name: "Start contest", slug: "id" },
+      addToSelected,
+    ]);
+  }, []);
   return (
     <div className={styles.box}>
       <div className={styles.item}>
@@ -93,8 +110,7 @@ const HomePage = () => {
         <ListTexts
           className={styles.list}
           selector={selectorTextsSelected}
-          action={removeFromSelected}
-          link={{ href: "/contest/", name: "Start contest", slug: "id" }}
+          actions={remove}
         />
       </div>
       <div className={styles.item}>
@@ -102,8 +118,7 @@ const HomePage = () => {
         <ListTexts
           className={styles.list}
           selector={selectorTextsAvailable}
-          action={addToSelected}
-          link={{ href: "/contest/", name: "Start contest", slug: "id" }}
+          actions={add}
         />
       </div>
     </div>
