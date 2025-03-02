@@ -30,7 +30,7 @@ client
   .then(() => console.log("Connected to PostgreSQL database"))
   .catch((err) => console.error("Error connecting to database", err));
 
-async function queryAll(query: string, params: any[] = []) {
+async function queryAll(query: string, params: any[] = [], queryName: string) {
   try {
     const result = await client.query(query, params);
     return result.rows;
@@ -41,35 +41,28 @@ async function queryAll(query: string, params: any[] = []) {
 }
 
 interface PgError {
-  name: string;
-  hint: string;
   code: string;
-  detail: string;
 }
 
 const isPGError = (err: unknown): err is PgError => {
   const error = err as PgError;
   return (
-    typeof err === "object" &&
-    err !== null &&
-    typeof error.name === "string" &&
-    typeof error.hint === "string" &&
-    typeof error.code === "string" &&
-    typeof error.detail === "string"
+    typeof err === "object" && err !== null && typeof error.code === "string"
   );
 };
 
-async function queryOne(query: string, params: any[] = []) {
+async function queryOne(query: string, params: any[] = [], queryName: string) {
   try {
     const result = await client.query(query, params);
     return result.rows[0];
   } catch (err: unknown) {
     // const err2 = isPGError(err)
     if (isPGError(err)) {
-      console.error("Error executing query", err.name);
+      console.error("Error in", queryName, err);
+      throw new Error(`Error in ${queryName} with code ${err.code}`);
     }
 
-    throw err;
+    throw new Error(`queryOne: error in ${queryName}`);
   }
 }
 
@@ -86,7 +79,11 @@ type TextShortDB = Omit<TextFieldsDB, "text"> & {
 
 export async function getDbAllTexts(): Promise<TextsDict> {
   try {
-    const texts = (await queryAll(selectAllTexts)) as TextShortDB[];
+    const texts = (await queryAll(
+      selectAllTexts,
+      [],
+      "getDbAllTexts"
+    )) as TextShortDB[];
     const dict: TextsDict = {};
 
     for (const text of texts) {
@@ -107,13 +104,11 @@ export async function getDbAllTexts(): Promise<TextsDict> {
 const selectTextByID = "SELECT text FROM text WHERE id = $1";
 
 export async function getDbTextByID(id: string): Promise<TextContent> {
-  try {
-    const result = (await queryOne(selectTextByID, [id])) as TextContent;
-    return result;
-  } catch (err) {
-    console.error("Error get text by ID", err);
-    throw err;
-  }
+  return queryOne(
+    selectTextByID,
+    [id],
+    "getDbTextByID"
+  ) as Promise<TextContent>;
 }
 
 const updateQueryText = `
@@ -125,17 +120,11 @@ const updateQueryText = `
 `;
 
 export async function updateDBTextById(id: string, name: string, text: string) {
-  try {
-    const result = (await queryOne(updateQueryText, [
-      id,
-      name,
-      text,
-    ])) as TextContent;
-    return result;
-  } catch (err) {
-    console.error("Error updtae text by ID", err);
-    throw err;
-  }
+  return queryOne(
+    updateQueryText,
+    [id, name, text],
+    "updateDBTextById"
+  ) as Promise<TextContent>;
 }
 
 export async function updateDBTextByIdBoolean(
@@ -155,14 +144,20 @@ RETURNING *;
 `;
 
 export async function insertDbText(name: string, text: string) {
-  try {
-    const result = (await queryOne(queryInsert, [name, text])) as Pick<
+  return (
+    (await queryOne(queryInsert, [name, text], "insertDbText")) as Pick<
       TextsDict,
       "id"
-    >;
-    return result.id;
-  } catch (err) {
-    console.error("Error insert text by ID", err);
-    throw err;
-  }
+    >
+  ).id;
+}
+
+const queryDelete = `
+DELETE FROM "text" 
+WHERE "id" = $1 
+RETURNING *;
+`;
+
+export async function deleteTextById(id: string) {
+  return queryOne(queryDelete, [id], "deleteTextById");
 }
