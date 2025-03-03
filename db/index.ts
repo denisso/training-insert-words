@@ -30,16 +30,6 @@ client
   .then(() => console.log("Connected to PostgreSQL database"))
   .catch((err) => console.error("Error connecting to database", err));
 
-async function queryAll(query: string, params: any[] = [], queryName: string) {
-  try {
-    const result = await client.query(query, params);
-    return result.rows;
-  } catch (err) {
-    console.error("Error executing query", err);
-    throw err;
-  }
-}
-
 interface PgError {
   code: string;
 }
@@ -51,18 +41,38 @@ const isPGError = (err: unknown): err is PgError => {
   );
 };
 
-async function queryOne(query: string, params: any[] = [], queryName: string) {
+const handleError = (err: unknown, queryName: string) => {
+  if (isPGError(err)) {
+    console.error("Error in", queryName, err);
+    throw new Error(err.code);
+  }
+  console.error("Error in", queryName, err);
+  throw new Error(`queryOne: error in ${queryName}`);
+};
+
+async function queryAll(
+  query: string,
+  params: string[] = [],
+  queryName: string
+) {
+  try {
+    const result = await client.query(query, params);
+    return result.rows;
+  } catch (err) {
+    handleError(err, queryName);
+  }
+}
+
+async function queryOne(
+  query: string,
+  params: string[] = [],
+  queryName: string
+) {
   try {
     const result = await client.query(query, params);
     return result.rows[0];
   } catch (err: unknown) {
-    // const err2 = isPGError(err)
-    if (isPGError(err)) {
-      console.error("Error in", queryName, err);
-      throw new Error(`Error in ${queryName} with code ${err.code}`);
-    }
-
-    throw new Error(`queryOne: error in ${queryName}`);
+    handleError(err, queryName);
   }
 }
 
