@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import sm, { StatePublic } from "@/StateManager";
-import { TextInfo } from "@/db";
+import { TextInfo, getDbTextByID } from "@/db";
 import ListTexts, { Action } from "@/Components/ListTexts";
 import useConstructor from "@/utils/useConstructor";
 import smd, { SMDState, changeText, saveTextToDB } from "./state";

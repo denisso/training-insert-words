@@ -53,8 +53,8 @@ const TextEditor = ({ className }: Props) => {
       }
       if (reason == "push")
         getDbTextByID(smd().state.textID)
-          .then(({ text }) => {
-            setText(text);
+          .then(({ data }) => {
+            setText(data.text);
           })
           .catch((e) => {
             if (!contentRef.current)

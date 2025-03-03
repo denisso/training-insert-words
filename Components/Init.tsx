@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import sm from "@/StateManager";
+import sm, { TextsDict } from "@/StateManager";
 import { getDbAllTexts } from "@/db";
 
 const Init = () => {
@@ -8,9 +8,18 @@ const Init = () => {
     sm();
     // contest();
     getDbAllTexts()
-      .then((texts) => {
-        sm().state.texts = texts;
-        sm().state.textsAvailable = Object.keys(texts).sort((a, b) => {
+      .then(({ data }) => {
+        const dict: TextsDict = {};
+        data.forEach((text) => {
+          if (text instanceof Object)
+            dict[text.id] = {
+              length: text.length,
+              group: text.group === null ? [] : text.group.split(","),
+              name: text.name,
+            };
+        });
+        sm().state.texts = dict;
+        sm().state.textsAvailable = Object.keys(dict).sort((a, b) => {
           if (a.length === b.length) {
             return a.localeCompare(b);
           }

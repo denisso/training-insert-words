@@ -1,5 +1,5 @@
 "use server";
-import { Client } from "pg";
+import { QueryResult, Client } from "pg";
 
 export type TextFieldsDB = {
   id: string;
@@ -12,9 +12,6 @@ export type TextInfo = Omit<TextFieldsDB, "text"> & {
   group: string[];
 };
 
-export type TextsDict = {
-  [id: TextInfo["id"]]: Pick<TextInfo, "name" | "length" | "group">;
-};
 export type TextContent = Pick<TextFieldsDB, "text">;
 
 const client = new Client({
@@ -24,6 +21,10 @@ const client = new Client({
       ? { rejectUnauthorized: false }
       : false,
 });
+
+type ResponseData = Promise<{
+  data: TextFieldsDB;
+}>;
 
 client
   .connect()
@@ -42,39 +43,49 @@ const isPGError = (err: unknown): err is PgError => {
 };
 
 const handleError = (err: unknown, queryName: string) => {
-  if (isPGError(err)) {
-    console.error("Error in", queryName, err);
-    throw new Error(err.code);
-  }
+  let error;
+  if (isPGError(err)) error = { error: err.code };
+  else error = { error: true };
   console.error("Error in", queryName, err);
-  throw new Error(`queryOne: error in ${queryName}`);
+  return error;
 };
 
-async function queryAll(
+const queryAll = async (
   query: string,
   params: string[] = [],
   queryName: string
-) {
-  try {
-    const result = await client.query(query, params);
-    return result.rows;
-  } catch (err) {
-    handleError(err, queryName);
-  }
-}
+) =>
+  new Promise((resolve, reject) => {
+    client.query(query, params).then(
+      (results) => {
+        console.log(results);
+        resolve({ data: results.rows });
+      },
+      (err) => reject(handleError(err, queryName))
+    );
+  });
 
-async function queryOne(
+const queryOne = async (
   query: string,
   params: string[] = [],
   queryName: string
-) {
-  try {
-    const result = await client.query(query, params);
-    return result.rows[0];
-  } catch (err: unknown) {
-    handleError(err, queryName);
-  }
-}
+) =>
+  new Promise((resolve, reject) => {
+    client.query(query, params).then(
+      (result) => resolve({ data: result.rows[0] ? result.rows[0] : [] }),
+      (err) => reject(handleError(err, queryName))
+    );
+  });
+
+const selectTextByID = "SELECT text FROM text WHERE id = $1";
+
+export const getDbTextByID = async (id: string): ResponseData =>
+  new Promise((resolve) => {
+    (queryOne(selectTextByID, [id], "getDbTextByID") as ResponseData).then(
+      resolve,
+      resolve
+    );
+  });
 
 const selectAllTexts = `
   SELECT t1.id, t1.name, t1.length, STRING_AGG(t2.id_category::text, ',') AS "group"
@@ -87,39 +98,14 @@ type TextShortDB = Omit<TextFieldsDB, "text"> & {
   group: string;
 };
 
-export async function getDbAllTexts(): Promise<TextsDict> {
-  try {
-    const texts = (await queryAll(
-      selectAllTexts,
-      [],
-      "getDbAllTexts"
-    )) as TextShortDB[];
-    const dict: TextsDict = {};
-
-    for (const text of texts) {
-      dict[text.id] = {
-        length: text.length,
-        group: text.group === null ? [] : text.group.split(","),
-        name: text.name,
-      };
-    }
-
-    return dict;
-  } catch (err) {
-    console.error("Error fetching all texts", err);
-    throw err;
-  }
-}
-
-const selectTextByID = "SELECT text FROM text WHERE id = $1";
-
-export async function getDbTextByID(id: string): Promise<TextContent> {
-  return queryOne(
-    selectTextByID,
-    [id],
-    "getDbTextByID"
-  ) as Promise<TextContent>;
-}
+export const getDbAllTexts = async (): Promise<{ data: TextShortDB[] }> =>
+  new Promise((resolve) => {
+    (
+      queryAll(selectAllTexts, [], "getDbAllTexts") as Promise<{
+        data: TextShortDB[];
+      }>
+    ).then(resolve, resolve);
+  });
 
 const updateQueryText = `
   UPDATE "text"
@@ -129,23 +115,31 @@ const updateQueryText = `
   RETURNING *;
 `;
 
-export async function updateDBTextById(id: string, name: string, text: string) {
-  return queryOne(
-    updateQueryText,
-    [id, name, text],
-    "updateDBTextById"
-  ) as Promise<TextContent>;
-}
-
-export async function updateDBTextByIdBoolean(
+export const updateDBTextById = async (
   id: string,
   name: string,
   text: string
-) {
-  return new Promise((resolve, reject) => {
-    updateDBTextById(id, name, text).then((_) => resolve(true), reject);
+): ResponseData =>
+  new Promise((resolve) => {
+    (
+      queryOne(
+        updateQueryText,
+        [id, name, text],
+        "updateDBTextById"
+      ) as ResponseData
+    ).then(resolve, resolve);
   });
-}
+
+export const updateDBTextByIdBoolean = async (
+  id: string,
+  name: string,
+  text: string
+) =>
+  new Promise((resolve) =>
+    updateDBTextById(id, name, text).then((result) =>
+      result.data ? resolve(true) : resolve(result)
+    )
+  );
 
 const queryInsert = `
 INSERT INTO text (name, text)
@@ -153,14 +147,11 @@ VALUES ($1, $2)
 RETURNING *;
 `;
 
-export async function insertDbText(name: string, text: string) {
+export const insertDbText = async (name: string, text: string) => {
   return (
-    (await queryOne(queryInsert, [name, text], "insertDbText")) as Pick<
-      TextsDict,
-      "id"
-    >
-  ).id;
-}
+    await (queryOne(queryInsert, [name, text], "insertDbText") as ResponseData)
+  ).data.text;
+};
 
 const queryDelete = `
 DELETE FROM "text" 
