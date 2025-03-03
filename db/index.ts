@@ -58,7 +58,6 @@ const queryAll = async (
   new Promise((resolve, reject) => {
     client.query(query, params).then(
       (results) => {
-        console.log(results);
         resolve({ data: results.rows });
       },
       (err) => reject(handleError(err, queryName))

@@ -82,8 +82,8 @@ type Props = {
 export default function Menu({ textId }: Props) {
   React.useEffect(() => {
     getDbTextByID(textId)
-      .then(({ text }) => {
-        contest().loadText(text);
+      .then(({ data }) => {
+        contest().loadText(data.text);
       })
       .catch((error) => {
         alert(error);

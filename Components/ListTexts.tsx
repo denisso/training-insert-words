@@ -2,8 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { TextInfo } from "@/db";
-import sm from "@/StateManager";
-import type { TextsDict } from "@/db";
+import sm, { TextsDict } from "@/StateManager";
 import classNames from "classnames";
 import styles from "./ListTexts.module.scss";
 
