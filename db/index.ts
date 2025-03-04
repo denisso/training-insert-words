@@ -146,11 +146,13 @@ VALUES ($1, $2)
 RETURNING *;
 `;
 
-export const insertDbText = async (name: string, text: string) => {
-  return (
-    await (queryOne(queryInsert, [name, text], "insertDbText") as ResponseData)
-  ).data.text;
-};
+export const insertDbText = async (name: string, text: string) =>
+  new Promise((resolve) => {
+    (queryOne(queryInsert, [name, text], "insertDbText") as ResponseData).then(
+      ({ data }) => resolve(data.text),
+      resolve
+    );
+  });
 
 const queryDelete = `
 DELETE FROM "text" 
@@ -158,6 +160,9 @@ WHERE "id" = $1
 RETURNING *;
 `;
 
-export async function deleteTextById(id: string) {
-  return queryOne(queryDelete, [id], "deleteTextById");
-}
+export const deleteTextById = async (id: string) => 
+  new Promise(resolve => {
+    queryOne(queryDelete, [id], "deleteTextById").then(resolve, resolve)
+  })
+
+
