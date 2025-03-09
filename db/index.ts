@@ -146,10 +146,10 @@ VALUES ($1, $2)
 RETURNING *;
 `;
 
-export const insertDbText = async (name: string, text: string) =>
+export const insertDbText = async (name: string, text: string): Promise<string> =>
   new Promise((resolve) => {
     (queryOne(queryInsert, [name, text], "insertDbText") as ResponseData).then(
-      ({ data }) => resolve(data.text),
+      ({ data }) => resolve(data.id),
       resolve
     );
   });

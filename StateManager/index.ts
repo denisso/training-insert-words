@@ -3,9 +3,7 @@ import { TextInfo } from "@/db";
 import clientSingletonBuilder from "@/utils/clientSingletonBuilder";
 import type { PopupItem } from "@/Components/Popup/Popup";
 type ObserverCallback<T, K extends keyof T> = (arg: T[K]) => void;
-export type TextsDict = {
-  [id: TextInfo["id"]]: Pick<TextInfo, "name" | "length" | "group">;
-};
+
 export abstract class StateManager<T extends object> {
   protected _state: T;
   protected abstract state: T;
@@ -125,6 +123,10 @@ export abstract class StateManager<T extends object> {
     });
   }
 }
+
+export type TextsDict = {
+  [id: TextInfo["id"]]: Pick<TextInfo, "name" | "length">;
+};
 
 export type StatePublic = {
   // stage: (typeof stages)[number];
